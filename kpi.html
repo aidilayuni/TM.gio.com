@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>KPI Dashboard</title>
+    <style>
+        :root{
+            --bg:#d47c08;
+            --panel:linear-gradient(180deg,#0d0b12,#0a0810);
+            --accent:#ff9b2e;
+            --muted:#eeeef0;
+            --glass:rgba(233, 141, 22, 0.925);
+        }
+        *{box-sizing:border-box}
+        body{
+            margin:0;
+            font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+            color:#fff;
+            background:radial-gradient(900px 400px at 10% 10%, rgba(255,155,46,0.03), transparent),
+                       linear-gradient(180deg,var(--bg),#0b0710 60%);
+            min-height:100vh;
+            -webkit-font-smoothing:antialiased;
+        }
+
+        /* layout */
+        .app {
+            display:flex;
+            min-height:100vh;
+        }
+        nav.sidebar {
+            width:260px;
+            background:var(--panel);
+            border-right:1px solid rgba(255,155,46,0.04);
+            padding:20px;
+            display:flex;
+            flex-direction:column;
+            gap:18px;
+        }
+        .brand {
+            display:flex;
+            gap:12px;
+            align-items:center;
+        }
+        .brand img{height:40px;filter:drop-shadow(0 8px 24px rgba(255,155,46,0.06));}
+        .brand h1{font-size:1rem;margin:0;color:#ffd7ab;font-weight:700;letter-spacing:0.6px}
+
+        .navlist{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+        .navlink{
+            display:flex;align-items:center;gap:12px;
+            padding:10px 12px;border-radius:10px;color:var(--muted);
+            text-decoration:none;font-weight:600;
+            border:1px solid transparent;
+        }
+        .navlink:hover{background:rgba(255,155,46,0.06);color:#fff;border-color:rgba(255,155,46,0.04)}
+        .navlink.active{background:linear-gradient(90deg, rgba(255,155,46,0.12), rgba(255,107,0,0.06));color:#fff}
+
+        .spacer{flex:1}
+
+        .logout-btn{
+            background:transparent;border:1px solid rgb(231, 139, 40);
+            color:var(--accent);padding:10px;border-radius:10px;cursor:pointer;font-weight:700;
+        }
+
+        main.content {
+            flex:1;padding:28px;
+        }
+        .topbar{
+            display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;
+        }
+        .title {font-family: "Orbitron",sans-serif;color:#fff;font-size:1.4rem}
+        .card{
+            background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            border-radius:12px;padding:18px;border:1px solid rgba(255,155,46,0.04);
+            margin-bottom:18px;color:var(--muted);
+        }
+
+        .links-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+        .link-item{
+            background:rgba(0, 0, 0, 0.938);padding:14px;border-radius:10px;
+            display:flex;flex-direction:column;gap:10px;align-items:flex-start;
+        }
+        .link-item .lbl{font-weight:700;color:#fff}
+        .link-item a{
+            display:inline-block;padding:8px 12px;border-radius:8px;background:linear-gradient(90deg,var(--accent),#ff6b00);
+            color:#111;text-decoration:none;font-weight:700;
+        }
+
+        /* mobile */
+        .mobile-toggle{display:none;cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:var(--muted)}
+        @media (max-width:800px){
+            nav.sidebar{position:fixed;left:-320px;top:0;bottom:0;z-index:40;transition:left .22s;box-shadow:8px 0 40px rgba(0,0,0,0.6)}
+            nav.sidebar.open{left:0}
+            .mobile-toggle{display:inline-block}
+            .app{position:relative}
+            main.content{padding:18px}
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <nav class="sidebar" id="sidebar">
+            <div class="brand">
+                <img src="source/tm.png" alt="logo">
+                <div>
+                    <h1>NETWORK OPERATION</h1>
+                    <div style="font-size:11px;color:#ffd7ab;margin-top:4px">KEDAH & PERLIS</div>
+                </div>
+            </div>
+
+            <div class="navlist">
+                <a class="navlink active" href="KPI.HTML">Report Links</a>
+                <a class="navlink" href="dashboard.html">Dashboard</a>
+                <a class="navlink" href="team.html">Team</a>
+                <a class="navlink" href="createpage.html">Create Link</a>
+            </div>
+
+            <div class="spacer"></div>
+
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </nav>
+
+        <main class="content">
+            <div class="topbar">
+                <div>
+                    <button class="mobile-toggle" id="menuToggle">☰</button>
+                    <div class="title">Report Quick Links</div>
+                </div>
+                <div style="color:var(--muted)">Welcome on board, staff</div>
+            </div>
+
+            <div class="card">
+                <strong style="color:#fff">Use these links to access tools and external resources quickly.</strong>
+                <p style="margin:8px 0 0 0">Click a link to open it in a new tab. You might required to use a TM secured and VPN to access to the link. You can add more links using the 'Create Link' page.</p>
+            </div>
+
+            <div class="links-grid" id="linksGrid">
+                <div class="link-item">
+                    <div class="lbl">CTT Report</div>
+                    <div class="desc">Open to track a datas.</div>
+                    <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/ANOC%20Southern/C-TrackerV3Nationwide?rs:embed=true" target="_blank" rel="noopener">CTT TRACKER DATAS</a>
+                </div>
+                <div class="link-item">
+                    <div class="lbl">Incident Tracker</div>
+                    <div class="desc">Report/view incidents.</div>
+                    <a href="https://example-incidents.local" target="_blank" rel="noopener">Open Tracker</a>
+                </div>
+                <div class="link-item">
+                    <div class="lbl">Team Dashboard</div>
+                    <div class="desc">Quick access to team metrics.</div>
+                    <a href="dashboard.html" target="_blank" rel="noopener">Open Team Dashboard</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script>
+    // toggle mobile sidebar
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    menuToggle && menuToggle.addEventListener('click', ()=> sidebar.classList.toggle('open'));
+
+    // logout: try server logout then redirect to login page
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        try {
+            // if you have a server-side logout endpoint call it (uncomment)
+            // await fetch('/TM/php/logout.php', { method: 'POST', credentials: 'same-origin' });
+        } catch(e){ /* ignore */ }
+        // clear any client-side data
+        try { localStorage.clear(); sessionStorage.clear(); } catch(e){}
+        window.location.href = 'dashboard.html';
+    });
+</script>
+</body>
+</html>

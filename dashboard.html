@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Company Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary: #e09c4f;
+            --accent: #a76b10;
+            --bg: #fff;
+            --panel-bg: #f4f6f8;
+            --tab-bg: #f4f6f8;
+            --tab-active: #e6a23c;
+            --tab-color: #222;
+        }
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            margin: 0;
+            background: var(--panel-bg);
+            color: var(--primary);
+        }
+        header {
+            background: var(--primary);
+            color: #fff;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .login-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .login-btn:hover {
+            background: #c98a2b;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 16px;
+        }
+        .about-panel {
+            background: var(--bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 32px;
+            margin-bottom: 40px;
+        }
+        .about-panel h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .about-panel p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+        .team-section {
+            background: var(--bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 32px;
+        }
+        .team-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .team-header h2 {
+            font-size: 2.5rem;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+        .team-header .bold {
+            font-weight: 700;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            background: var(--tab-bg);
+            color: var(--tab-color);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .tab.active {
+            background: var(--tab-active);
+            color: #fff;
+        }
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 32px;
+        }
+        .member-card {
+            text-align: center;
+            padding: 0 8px;
+        }
+        .member-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #e3eaf2;
+            margin: 0 auto 16px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 4px solid var(--panel-bg);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        .member-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        .member-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+        .member-role {
+            font-size: 0.95rem;
+            color: var(--accent);
+            margin-bottom: 2px;
+            font-weight: 500;
+        }
+        .member-title {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        @media (max-width: 900px) {
+            .container {
+                padding: 16px 4px;
+            }
+            .about-panel, .team-section {
+                padding: 16px;
+            }
+            .team-header h2 {
+                font-size: 2rem;
+            }
+        }
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                gap: 12px;
+                padding: 16px;
+            }
+            .team-header h2 {
+                font-size: 1.5rem;
+            }
+            .team-grid {
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div style="display: flex; align-items: center; gap: 16px;">
+        <img src="source/tm.png" alt="NETWORK OPERATION PERFORMANCE KEDAH & PERLIS" style="height:40px;">
+        <h1 style="margin: 0;">NETWORK OPERATION PERFORMANCE KEDAH & PERLIS</h1>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center;">
+        <button class="login-btn" onclick="window.location.href='login.html'">Login</button>
+    </div>
+</header>
+    <div class="container">
+        <div class="about-panel">
+            <h2>About Organisation</h2>
+            <p>
+                Acme Corp is a leading provider of innovative solutions. Our mission is to deliver excellence and value to our clients worldwide.
+            </p>
+        </div>
+        <div class="team-section">
+            <div class="team-header">
+                <h2>Meet the <span class="bold">team.</span></h2>
+            </div>
+            <div class="tabs">
+    <button class="tab active" data-group="leadership">Network State Kedah/Perlis</button>
+    <button class="tab" data-group="client">Client Services</button>
+    <button class="tab" data-group="creative">Creative</button>
+    <button class="tab" data-group="development">Development</button>
+    <button class="tab" data-group="marketing">Marketing & Sales</button>
+    <button class="tab" data-group="strategy">Strategy</button>
+    <button class="tab" data-group="all">All</button>
+</div>
+<div class="team-grid">
+    <div class="member-card" data-group="leadership">
+        <div class="member-photo">
+            <img src="source/tajul.png" alt="Steve Ambuul">
+        </div>
+        <div class="member-name">MOHAMED TAJUL BIN MOHAMED SULTAN</div>
+        <div class="member-role">CHIEF NETWORK OFFICER GROUP NETWORK TECHNOLOGY</div>
+        <div class="member-title"></div>
+    </div>
+    <div class="member-card" data-group="leadership">
+        <div class="member-photo">
+            <img src="source/amsari.png" alt="Mel Phelps Cevik">
+        </div>
+        <div class="member-name">MOHAMAD ANSAHARI BIN ABDUL KUDUS</div>
+        <div class="member-role">VP NETWORK ROLL-OUT & OPERATIONS</div>
+        <div class="member-title"></div>
+    </div>
+    <div class="member-card" data-group="leadership">
+        <div class="member-photo">
+            <img src="source/normah.png" alt="Alden Dale">
+        </div>
+        <div class="member-name">NORMAH HANI BINTI MUHAMAD HABIB</div>
+        <div class="member-role">50002706
+GENERAL MANAGER NETWORK KEDAH/PERLISS</div>
+        <div class="member-title"></div>
+    </div>
+    <div class="member-card" data-group="leadership">
+        <div class="member-photo">
+            <img src="source/ina.png" alt="Kaley Deneen">
+        </div>
+        <div class="member-name">KALEY DENEEN</div>
+        <div class="member-role">REGIONAL DIRECTOR, EMEA</div>
+        <div class="member-title"></div>
+    </div>
+    <div class="member-card" data-group="leadership">
+        <div class="member-photo">
+            <img src="https://randomuser.me/api/portraits/men/5.jpg" alt="Tony Eades">
+        </div>
+        <div class="member-name">TONY EADES</div>
+        <div class="member-role">CHIEF STRATEGY OFFICER</div>
+        <div class="member-title"></div>
+    </div>
+    <div class="member-card" data-group="client">
+        <div class="member-photo">
+            <img src="https://randomuser.me/api/portraits/women/6.jpg" alt="Megan Erickson">
+        </div>
+        <div class="member-name">MEGAN ERICKSON</div>
+        <div class="member-role">EXECUTIVE DIRECTOR, FINANCE AND BUSINESS ADMINISTRATION</div>
+        <div class="member-title"></div>
+    </div>
+    <div class="member-card" data-group="client">
+        <div class="member-photo">
+            <img src="https://randomuser.me/api/portraits/women/7.jpg" alt="Ursula Feller">
+        </div>
+        <div class="member-name">URSULA FELLER</div>
+        <div class="member-role">PEOPLE AND CULTURE GENERALIST</div>
+        <div class="member-title"></div>
+    </div>
+    <div class="member-card" data-group="development">
+        <div class="member-photo">
+            <img src="https://randomuser.me/api/portraits/men/8.jpg" alt="Brandon Jones">
+        </div>
+        <div class="member-name">BRANDON JONES</div>
+        <div class="member-role">EXECUTIVE REGIONAL DIRECTOR, NA</div>
+        <div class="member-title"></div>
+    </div>
+    <div class="member-card" data-group="creative">
+        <div class="member-photo">
+            <img src="https://randomuser.me/api/portraits/women/9.jpg" alt="Alaire Jones">
+        </div>
+        <div class="member-name">ALAIRE JONES</div>
+        <div class="member-role">DIRECTOR OF OPERATIONS</div>
+        <div class="member-title"></div>
+    </div>
+    <div class="member-card" data-group="strategy">
+        <div class="member-photo">
+            <img src="https://randomuser.me/api/portraits/men/10.jpg" alt="Andrew Levy">
+        </div>
+        <div class="member-name">ANDREW LEVY</div>
+        <div class="member-role">EXECUTIVE DIRECTOR, REVENUE OPERATIONS</div>
+        <div class="member-title"></div>
+    </div>
+</div>
+<script>
+    // Responsive tab filtering
+    const tabs = document.querySelectorAll('.tab');
+    const cards = document.querySelectorAll('.member-card');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const group = tab.getAttribute('data-group');
+            cards.forEach(card => {
+                if (group === 'all' || card.getAttribute('data-group') === group) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
