@@ -23,7 +23,6 @@
             -webkit-font-smoothing:antialiased;
         }
 
-        /* layout */
         .app {
             display:flex;
             min-height:100vh;
@@ -75,6 +74,16 @@
             margin-bottom:18px;color:var(--muted);
         }
 
+        h2.section-title{
+            color:#ffd7ab;
+            margin:28px 0 12px;
+            border-bottom:1px solid rgba(255,155,46,0.2);
+            padding-bottom:6px;
+            font-size:1.2rem;
+            font-weight:700;
+            letter-spacing:0.4px;
+        }
+
         .links-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
         .link-item{
             background:rgba(0, 0, 0, 0.938);padding:14px;border-radius:10px;
@@ -86,7 +95,6 @@
             color:#111;text-decoration:none;font-weight:700;
         }
 
-        /* mobile */
         .mobile-toggle{display:none;cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:var(--muted)}
         @media (max-width:800px){
             nav.sidebar{position:fixed;left:-320px;top:0;bottom:0;z-index:40;transition:left .22s;box-shadow:8px 0 40px rgba(0,0,0,0.6)}
@@ -109,15 +117,13 @@
             </div>
 
             <div class="navlist">
-                <a class="navlink active" href="KPI.HTML">Report Links</a>
-                 <a class="navlink" href="https://tm365.sharepoint.com/sites/PERFORMANCENOKEDAHPERLIS/WEEKLY%20RAW%20DATA/Forms/AllItems.aspx">PERFORMANCE</a>
-                 <a class="navlink" href="excel.html">WEEKLY SUMMARY</a>
+                <a class="navlink active" href="KPI.html">Report Links</a>
+                <a class="navlink" href="https://tm365.sharepoint.com/sites/PERFORMANCENOKEDAHPERLIS/WEEKLY%20RAW%20DATA/Forms/AllItems.aspx">PERFORMANCE</a>
+                <a class="navlink" href="excel.html">WEEKLY SUMMARY</a>
                 <a class="navlink" href="dashboard.html">Dashboard</a>
-                
             </div>
 
             <div class="spacer"></div>
-
             <button class="logout-btn" id="logoutBtn">Logout</button>
         </nav>
 
@@ -132,24 +138,64 @@
 
             <div class="card">
                 <strong style="color:#fff">Use these links to access tools and external resources quickly.</strong>
-                <p style="margin:8px 0 0 0">Click a link to open it in a new tab. You might required to use a TM secured and VPN to access to the link. You can add more links using the 'Create Link' page.</p>
+                <p style="margin:8px 0 0 0">
+                    Click a link to open it in a new tab. You might be required to use TM secured VPN access.  
+                    You can access VPN using the link below:
+                </p>
+                <a href="https://istream.tm.com.my/dana/user/#" target="_blank" rel="noopener">VPN ACCESS</a>
             </div>
 
-            <div class="links-grid" id="linksGrid">
+            <!-- DAILY REPORTS SECTION -->
+            <h2 class="section-title">🗓 Daily Reports</h2>
+            <div class="links-grid">
                 <div class="link-item">
-                    <div class="lbl">CTT Report</div>
-                    <div class="desc">Open to track the CTT datas.</div>
-                    <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/ANOC%20Southern/C-TrackerV3Nationwide?rs:embed=true" target="_blank" rel="noopener">CTT TRACKER DATAS</a>
+                    <div class="lbl">SOD/EOD Report</div>
+                    <div class="desc">Track daily CTT raw data.</div>
+                    <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/ANOC%20Southern/C-TrackerV3Nationwide?rs:embed=true" target="_blank" rel="noopener">OPEN CTT TRACKER DATA</a>
                 </div>
                 <div class="link-item">
                     <div class="lbl">CR Tracker</div>
-                    <div class="desc">Open to track the CR datas.</div>
-                    <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/ANOC%20Southern/CR-TrackerV1?rs:embed=true" target="_blank" rel="noopener">Open Tracker</a>
+                    <div class="desc">Track CR raw data.</div>
+                    <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/ANOC%20Southern/CR-TrackerV1?rs:embed=true" target="_blank" rel="noopener">OPEN CR TRACKER</a>
+                </div>
+
+                <div class="link-item">
+                    <div class="lbl">NPSF/NPSA Report</div>
+                    <div class="desc">Access NPSF/NPSA Raw Data.</div>
+                    <a href="https://nocgrid.tm.com.my/dashboard/ntt/main.php" target="_blank" rel="noopener">OPEN NPSF/NPSA DATA</a>
+                </div>
+
+                <div class="link-item">
+                    <div class="lbl">CTT Next Step</div>
+                    <div class="desc">Access CTT NEXT raw weekly data.</div>
+                    <a href="https://performdepot.tm.com.my/login?from=%2Fjob%2FNEXT_CTT%2Fws%2F" target="_blank" rel="noopener">OPEN CTT RAW DATA</a>
+                </div>
+                
+                <div class="link-item">
+                    <div class="lbl">NTT Data Tracker</div>
+                    <div class="desc">Access daily NTT raw data.</div>
+                    <a href="https://nocgrid.tm.com.my/dashboard/ntt/main.php" target="_blank" rel="noopener">OPEN NTT DATA</a>
+                </div>
+                
+            </div>
+
+            <!-- WEEKLY REPORTS SECTION -->
+            <h2 class="section-title">📅 Weekly Reports</h2>
+            <div class="links-grid">
+                <div class="link-item">
+                    <div class="lbl">ISR REPORT</div>
+                    <div class="desc">Access ISR raw weekly data.</div>
+                    <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/TM%20Force%20Reporting/Fulfillment/TM%20Force%20Fulfillment_2025_H2" target="_blank" rel="noopener">OPEN ISR RAW DATA</a>
                 </div>
                 <div class="link-item">
-                    <div class="lbl">Team Dashboard</div>
-                    <div class="desc">Quick access to team metrics.</div>
-                    <a href="dashboard.html" target="_blank" rel="noopener">Open Team Dashboard</a>
+                    <div class="lbl">NPSF/NPSA Report</div>
+                    <div class="desc">Access NPSF/NPSA weekly reports.</div>
+                    <a href="https://tmvoc.qualtrics.com/login/identity-provider-select?stateID=93bfe34b-8489-469c-bc9a-d567d39dc675" target="_blank" rel="noopener">OPEN NPSA/NPSF DATA</a>
+                </div>
+                <div class="link-item">
+                    <div class="lbl">Weekly Summary</div>
+                    <div class="desc">View uploaded weekly Excel summary.</div>
+                    <a href="excel.html" target="_blank" rel="noopener">OPEN WEEKLY SUMMARY</a>
                 </div>
             </div>
         </main>
@@ -161,13 +207,8 @@
     const sidebar = document.getElementById('sidebar');
     menuToggle && menuToggle.addEventListener('click', ()=> sidebar.classList.toggle('open'));
 
-    // logout: try server logout then redirect to login page
+    // logout
     document.getElementById('logoutBtn').addEventListener('click', async () => {
-        try {
-            // if you have a server-side logout endpoint call it (uncomment)
-            // await fetch('/TM/php/logout.php', { method: 'POST', credentials: 'same-origin' });
-        } catch(e){ /* ignore */ }
-        // clear any client-side data
         try { localStorage.clear(); sessionStorage.clear(); } catch(e){}
         window.location.href = 'index.html';
     });
