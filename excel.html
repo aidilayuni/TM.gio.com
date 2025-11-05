@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Summary</title>
+  <style>
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: #0b0710;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #ff9b2e;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid rgba(255,155,46,0.2);
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: rgba(255,155,46,0.2);
+    }
+    tr:nth-child(even) {
+      background-color: rgba(255,255,255,0.03);
+    }
+    #uploadLabel {
+      background: linear-gradient(90deg,#ff9b2e,#ff6b00);
+      padding: 10px 16px;
+      color: #111;
+      font-weight: 700;
+      border-radius: 8px;
+      display: inline-block;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Weekly Summary Data</h1>
+
+  <label id="uploadLabel" for="fileInput">📄 Upload Excel File</label>
+  <input type="file" id="fileInput" accept=".xlsx, .xls">
+
+  <div id="output"></div>
+
+  <!-- SheetJS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const output = document.getElementById('output');
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        // get the first sheet
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+        displayTable(jsonData);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function displayTable(data) {
+      if (data.length === 0) {
+        output.innerHTML = "<p>No data found in this file.</p>";
+        return;
+      }
+
+      let table = "<table><thead><tr>";
+      data[0].forEach(header => {
+        table += `<th>${header}</th>`;
+      });
+      table += "</tr></thead><tbody>";
+
+      for (let i = 1; i < data.length; i++) {
+        table += "<tr>";
+        data[i].forEach(cell => {
+          table += `<td>${cell ?? ""}</td>`;
+        });
+        table += "</tr>";
+      }
+      table += "</tbody></table>";
+
+      output.innerHTML = table;
+    }
+  </script>
+</body>
+</html>
