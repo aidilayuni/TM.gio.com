@@ -20,9 +20,13 @@ module.exports = (app, db) => {
     const { week_label, uploaded_by } = req.body;
     if (!week_label) return res.status(400).json({ error: "Missing week_label" });
 
-    const sql = "INSERT INTO weekly_data (week_label, uploaded_by, file_name, data_json) VALUES (?, ?, ?, ?)";
+    const sql = `
+      INSERT INTO weekly_data (week_label, uploaded_by, file_name, data_json)
+      VALUES (?, ?, ?, ?)
+    `;
+
     db.query(sql, [week_label, uploaded_by || "Unknown", req.file.originalname, JSON.stringify(sheetData)], (err) => {
-      fs.unlinkSync(filePath); // remove temp file
+      fs.unlinkSync(filePath);
       if (err) {
         console.error("DB insert error:", err);
         return res.status(500).json({ error: "Database insert failed" });
@@ -43,7 +47,11 @@ module.exports = (app, db) => {
     const { month_label, uploaded_by } = req.body;
     if (!month_label) return res.status(400).json({ error: "Missing month_label" });
 
-    const sql = "INSERT INTO monthly_data (month_label, uploaded_by, file_name, data_json) VALUES (?, ?, ?, ?)";
+    const sql = `
+      INSERT INTO monthly_data (month_label, uploaded_by, file_name, data_json)
+      VALUES (?, ?, ?, ?)
+    `;
+
     db.query(sql, [month_label, uploaded_by || "Unknown", req.file.originalname, JSON.stringify(sheetData)], (err) => {
       fs.unlinkSync(filePath);
       if (err) {
@@ -86,4 +94,4 @@ module.exports = (app, db) => {
       res.json(JSON.parse(results[0].data_json));
     });
   });
-};
+}; // ✅ <--- This should be the final line of the file
