@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monthly Excel Upload</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fc;
+      padding: 30px;
+      color: #333;
+    }
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h1 { text-align: center; color: #222; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    button {
+      background: #27ae60;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 15px;
+    }
+    button:hover { background: #1f8e4c; }
+    #message { text-align: center; font-weight: bold; margin-top: 15px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📅 Monthly Excel Upload</h1>
+    <form id="monthlyForm">
+      <label>Month Label</label>
+      <input type="text" id="monthLabel" required>
+
+      <label>Uploaded By</label>
+      <input type="text" id="monthUploader" required>
+
+      <label>Select Excel File</label>
+      <input type="file" id="monthlyFile" accept=".xlsx,.xls" required>
+
+      <button type="submit">Upload Monthly File</button>
+    </form>
+
+    <p id="message"></p>
+
+    <h2>Uploaded Monthly Files</h2>
+    <table id="monthlyTable">
+      <thead>
+        <tr><th>ID</th><th>Month</th><th>Uploader</th><th>File Name</th><th>Uploaded</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="../js/monthly.js"></script>
+</body>
+</html>

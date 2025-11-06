@@ -1,48 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Staff Register</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { background:#f4f6f8; font-family:Montserrat, Arial, sans-serif; margin:0; display:flex; align-items:center; justify-content:center; height:100vh; }
-        .card { background:#fff; padding:28px; border-radius:12px; box-shadow:0 6px 24px rgba(0,0,0,0.08); width:100%; max-width:420px; }
-        h2 { text-align:center; margin:0 0 18px 0; color:#222; }
-        .form-group { margin-bottom:14px; }
-        label { display:block; margin-bottom:6px; color:#333; font-weight:600; }
-        input { width:100%; padding:10px 12px; border:1px solid #e3eaf2; border-radius:6px; background:#f7f9fb; }
-        input:focus { outline:none; border-color:#e6a23c; }
-        .btn { width:100%; padding:12px 0; border-radius:6px; border:none; background:#e6a23c; color:#fff; font-weight:700; cursor:pointer; margin-top:8px; }
-        .btn:hover { background:#c98a2b; }
-        .muted { color:#666; font-size:0.92rem; text-align:center; margin-top:12px; }
-        .error { color:#d32f2f; text-align:center; margin-bottom:12px; }
-        .success { color:#1b7a2f; text-align:center; margin-bottom:12px; }
-        .small { font-size:0.9rem; color:#666; margin-top:8px; text-align:center; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Register Staff</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial; background: #f4f6f8; display: flex; align-items: center; justify-content: center; height: 100vh; }
+    .register-container { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
+    input, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #ddd; }
+    button { background: #e6a23c; color: white; font-weight: bold; cursor: pointer; border: none; }
+    button:hover { background: #c98a2b; }
+    .error { color: #d32f2f; text-align: center; }
+    .success { color: #388e3c; text-align: center; }
+  </style>
 </head>
 <body>
-    <div class="card">
-        <h2>Create Staff Account</h2>
-        <form id="registerForm">
-            <div class="form-group">
-                <label for="staffid">Staff ID</label>
-                <input id="staffid" name="staffid" required />
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input id="password" name="password" type="password" required />
-            </div>
-            <div class="form-group">
-                <label for="password2">Confirm password</label>
-                <input id="password2" name="password2" type="password" required />
-            </div>
-            <div class="error" id="errorMsg"></div>
-            <div class="success" id="successMsg"></div>
-            <button type="submit" class="btn">Create account</button>
-        </form>
-        <div class="small">Already have an account? <a href="login.html">Login</a></div>
-    </div>
-
-    <script src="js/register.js"></script>
+  <div class="register-container">
+    <h2>Register Staff</h2>
+    <form id="registerForm">
+      <input type="text" id="staffid" placeholder="Staff ID" required>
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <input type="password" id="confirm" placeholder="Confirm Password" required>
+      <div id="errorMsg" class="error"></div>
+      <div id="successMsg" class="success"></div>
+      <button type="submit">Register</button>
+    </form>
+  </div>
+  <script src="js/register.js"></script>
 </body>
 </html>

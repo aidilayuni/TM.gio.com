@@ -1,51 +1,45 @@
-document.getElementById('registerForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const staffid = document.getElementById('staffid').value.trim();
-    const password = document.getElementById('password').value;
-    const password2 = document.getElementById('password2').value;
-    const errorEl = document.getElementById('errorMsg');
-    const successEl = document.getElementById('successMsg');
-    errorEl.textContent = '';
-    successEl.textContent = '';
+// js/register.js
 
-    if (!staffid || !password) {
-        errorEl.textContent = 'Staff ID and password are required.';
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const staffid = document.getElementById("staffid").value.trim();
+    const name = document.getElementById("name").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const confirm = document.getElementById("confirm").value.trim();
+    const errorMsg = document.getElementById("errorMsg");
+    const successMsg = document.getElementById("successMsg");
+
+    errorMsg.textContent = "";
+    successMsg.textContent = "";
+
+    if (!staffid || !name || !password || !confirm) {
+        errorMsg.textContent = "Please fill in all fields.";
         return;
     }
-    if (password !== password2) {
-        errorEl.textContent = 'Passwords do not match.';
+
+    if (password !== confirm) {
+        errorMsg.textContent = "Passwords do not match.";
         return;
     }
 
     try {
-        const resp = await fetch('php/register_api.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ staffid, password })
+        const response = await fetch("http://localhost:3000/register", { // ✅ Port 3000
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ staffid, name, password })
         });
 
-        const text = await resp.text(); // read raw response
-        // log for debugging
-        console.log('Response status:', resp.status, resp.statusText);
-        console.log('Response body:', text);
-
-        // try parse JSON if content-type is JSON
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (err) {
-            errorEl.textContent = 'Server returned invalid response. See console for details.';
-            return;
-        }
+        const data = await response.json();
 
         if (data.success) {
-            successEl.textContent = 'Account created. Redirecting to login...';
-            setTimeout(() => location.href = 'login.html', 1300);
+            successMsg.textContent = "✅ Registration successful! You can now log in.";
+            document.getElementById("registerForm").reset();
         } else {
-            errorEl.textContent = data.message || 'Registration failed.';
+            errorMsg.textContent = data.error || "Registration failed.";
         }
     } catch (err) {
-        console.error('Fetch error:', err);
-        errorEl.textContent = 'Network error. Please try again.';
+        console.error(err);
+        errorMsg.textContent = "❌ Error connecting to server. Make sure Node.js is running.";
     }
 });

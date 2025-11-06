@@ -1,37 +1,33 @@
-document.getElementById('loginForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const staffid = document.getElementById('staffid').value.trim();
-    const password = document.getElementById('password').value;
-    const err = document.getElementById('errorMsg');
-    err.textContent = '';
+// js/login.js
 
-    // absolute endpoint (adjust '/TM' if your folder name differs)
-    const endpoint = window.location.origin + '/TM/php/login_api.php';
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const staffid = document.getElementById("staffid").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const errorMsg = document.getElementById("errorMsg");
+
+    // Clear any previous error message
+    errorMsg.textContent = "";
 
     try {
-        const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("http://localhost:3000/verify-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ staffid, password })
         });
 
-        const text = await res.text();
-        console.log('POST', endpoint, 'Status:', res.status, res.statusText);
-        console.log('Response body:', text);
+        const data = await response.json();
 
-        let data;
-        try { data = JSON.parse(text); } catch (ex) {
-            err.textContent = 'Server returned invalid JSON. Check console.';
-            return;
-        }
-
-        if (data.success) {
-            window.location.href = 'kpi.html';
+        if (data.message === "✅ Password match!") {
+            alert("Login successful!");
+            // Redirect to another page (example: KPI dashboard)
+            window.location.href = "kpi.html";
         } else {
-            err.textContent = data.message || 'Login failed. Please try again.';
+            errorMsg.textContent = "Invalid staff ID or password.";
         }
-    } catch (fetchErr) {
-        console.error('Fetch error:', fetchErr);
-        err.textContent = 'Network error. Make sure Apache is running and you opened the page via http://localhost/TM/';
+    } catch (err) {
+        console.error(err);
+        errorMsg.textContent = "Error connecting to server. Make sure Node.js is running.";
     }
 });
