@@ -7,121 +7,131 @@
 <style>
   :root{
     --bg:#d47c08;
-    --panel:linear-gradient(180deg,#0d0b12,#0a0810);
-    --accent:#ff9b2e;
     --muted:#eeeef0;
+    --accent:#ff9b2e;
   }
   *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
-    color:#fff;
-    background:linear-gradient(180deg,var(--bg),#0b0710 60%);
-    min-height:100vh;
-    padding:28px;
-  }
-  .container{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:20px;}
-  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;border:1px solid rgba(255,155,46,0.04)}
-  h1{font-family: "Orbitron",sans-serif;color:#fff;margin:0 0 8px;font-size:1.2rem}
-  p.lead{color:var(--muted);margin:6px 0 18px}
-  table{width:100%;border-collapse:collapse;margin-top:8px}
-  th, td{padding:8px;border-bottom:1px solid rgba(255,155,46,0.06);text-align:left;color:var(--muted);font-weight:600}
-  input[type="number"]{width:80px;padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff}
-  .row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
-  .zone-title{font-weight:800;color:#ffd7ab;margin-bottom:6px}
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#fff;background:linear-gradient(180deg,var(--bg),#0b0710 60%);padding:20px}
+  .wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 360px;gap:18px}
+  .card{background:linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.45));padding:18px;border-radius:12px;border:1px solid rgba(255,155,46,0.04)}
+  h1{margin:0 0 8px;font-family:Orbitron, sans-serif;color:#ffd7ab}
+  p.lead{color:var(--muted);margin:6px 0 16px}
+  .zone{margin-bottom:12px}
+  .zone-title{font-weight:800;color:#ffd7ab;margin-bottom:8px}
+  .grid{display:flex;gap:8px;flex-wrap:wrap}
+  .grid .field{display:flex;flex-direction:column;gap:6px}
+  input[type="number"]{width:110px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff}
   .actions{display:flex;gap:8px;margin-top:12px}
-  button{padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+  button{padding:10px 12px;border-radius:8px;border:none;font-weight:800;cursor:pointer}
   .btn-save{background:linear-gradient(90deg,var(--accent),#ff6b00);color:#111}
   .btn-clear{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-  .side{position:sticky;top:28px;height:fit-content}
   textarea{width:100%;height:120px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px}
-  .note{font-size:12px;color:#ffd7ab;margin-top:10px}
-  .preview-table{width:100%;border-collapse:collapse;margin-top:10px}
-  .preview-table th, .preview-table td{padding:6px;border:1px solid rgba(255,155,46,0.06);font-size:13px;color:var(--muted)}
-  .success{color:#b3ffb3;margin-top:8px}
+  .note{font-size:13px;color:#ffd7ab;margin-top:10px}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{padding:8px;border:1px solid rgba(255,155,46,0.04);color:var(--muted);font-weight:700;text-align:center}
+  .preview{margin-top:10px}
+  .msg{margin-top:10px;font-weight:800}
+  .ok{color:#b3ffb3}
+  .err{color:#ffb3b3}
+  @media(max-width:980px){ .wrap{grid-template-columns:1fr} }
+  .btn-back {
+  background: transparent;
+  border: 1px solid rgba(255,155,46,0.45);
+  color: #ffd7ab;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.btn-back:hover {
+  background: rgba(255,155,46,0.12);
+  transform: translateY(-2px);
+}
+
 </style>
 </head>
 <body>
-  <div class="container">
+  <div class="wrap">
     <div class="card">
-      <h1>Enter KPI Percentages — KEDAH & PERLIS</h1>
-      <p class="lead">Fill percentage values (0 - 100) for each KPI per zone. Values are stored locally (browser localStorage) and will appear on the KPI dashboard.</p>
+      <h1>KPI Input — KEDAH & PERLIS</h1>
+      <p class="lead">Enter percentage values (0–100) for each KPI per zone. Click <strong>Save KPI</strong> to store locally and on the server.</p>
 
-      <form id="kpiForm">
+      <form id="kpiForm" onsubmit="return false;">
         <input type="hidden" id="state" value="KEDAH&PERLIS">
 
-        <!-- Zones and KPIs -->
         <div id="zonesContainer"></div>
 
         <div class="actions">
-          <button type="button" class="btn-save" id="saveBtn">Save KPI</button>
-          <button type="button" class="btn-clear" id="clearBtn">Clear Saved</button>
+          <button id="saveBtn" class="btn-save" type="button">Save KPI</button>
+          <button id="clearBtn" class="btn-clear" type="button">Clear Saved</button>
+          <button id="backBtn"  class="btn-back" type="button">← Back to Dashboard</button>
         </div>
 
-        <div id="msg" class="success" aria-live="polite"></div>
+        <div id="msg" class="msg ok" style="display:none"></div>
       </form>
-
-      <p class="note">KPIs: MCATi, MCATi NO SHOW, NPSA, NPSF, MCATr, MCATr NO SHOW, CTIR.</p>
+      <div class="note">KPIs: MCATi, MCATi NO SHOW, NPSA, NPSF, MCATr, MCATr NO SHOW, CTIR.</div>
     </div>
 
-    <div class="card side">
-      <h1>Current / Import-Export</h1>
-      <p class="lead">Preview current saved KPI JSON or paste JSON to import.</p>
+    <div class="card">
+      <h1>Import / Export</h1>
+      <p class="lead">Preview saved KPI JSON or paste JSON to import.</p>
 
       <div>
-        <strong>Current saved JSON</strong>
+        <strong>Saved JSON</strong>
         <textarea id="savedJson" readonly></textarea>
-        <button class="btn-clear" id="copyJson">Copy JSON</button>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="copyJson" class="btn-clear">Copy JSON</button>
+        </div>
       </div>
 
-      <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,155,46,0.06)">
+      <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,155,46,0.04)">
 
       <div>
         <strong>Import JSON</strong>
-        <textarea id="importJson" placeholder='Paste JSON here then click "Import JSON"'></textarea>
+        <textarea id="importJson" placeholder='Paste JSON here to import'></textarea>
         <div style="display:flex;gap:8px;margin-top:8px">
           <button id="importBtn" class="btn-save">Import JSON</button>
-          <button id="resetPreview" class="btn-clear">Reload Preview</button>
+          <button id="reloadPreview" class="btn-clear">Reload Preview</button>
         </div>
       </div>
 
-      <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,155,46,0.06)">
-
-      <div>
-        <strong>Live preview</strong>
-        <table class="preview-table" id="previewTable">
-          <thead>
-            <tr><th>Zone</th><th>MCATi</th><th>MCATi NO SHOW</th><th>NPSA</th><th>NPSF</th><th>MCATr</th><th>MCATr NO SHOW</th><th>CTIR</th></tr>
-          </thead>
-          <tbody id="previewBody">
-          </tbody>
+      <div class="preview">
+        <strong>Preview</strong>
+        <table id="previewTable">
+          <thead><tr><th>Zone</th><th>MCATi</th><th>MCATi NO SHOW</th><th>NPSA</th><th>NPSF</th><th>MCATr</th><th>MCATr NO SHOW</th><th>CTIR</th></tr></thead>
+          <tbody id="previewBody"></tbody>
         </table>
       </div>
     </div>
   </div>
 
 <script>
-  // Zones and KPI keys
+  // ======== CONFIG ========
+  // Set this to the exact origin where your Node server is running.
+  // If your server is on port 3000 (as server.js), keep http://localhost:3000
+  const API_BASE = 'http://localhost:3000';
+  const API_SAVE = `${API_BASE}/api/kpi/save`;
+  // ========================
+
   const ZONES = ['ALOR SETAR','JITRA','KULIM','LANGKAWI','PERLIS','SG PETANI'];
   const KPI_KEYS = ['MCATi','MCATi_NO_SHOW','NPSA','NPSF','MCATr','MCATr_NO_SHOW','CTIR'];
   const STORAGE_KEY = 'kpi_kedah_perlis_v1';
 
-  // Build input rows
   const zonesContainer = document.getElementById('zonesContainer');
+
+  // build form inputs
   ZONES.forEach(zone => {
     const wrapper = document.createElement('div');
-    wrapper.className = 'card';
-    wrapper.style.marginBottom = '12px';
+    wrapper.className = 'zone';
     wrapper.innerHTML = `<div class="zone-title">${zone}</div>`;
     const row = document.createElement('div');
-    row.className = 'row';
+    row.className = 'grid';
     KPI_KEYS.forEach(k => {
-      const label = k.replace(/_/g,' ');
       const control = document.createElement('div');
-      control.style.display = 'flex';
-      control.style.flexDirection = 'column';
-      control.style.gap = '6px';
-      control.innerHTML = `<label style="font-size:12px;color:var(--muted)">${label}</label>
+      control.className = 'field';
+      control.innerHTML = `<label style="font-size:12px;color:#ffd7ab">${k.replace(/_/g,' ')}</label>
         <input type="number" min="0" max="100" step="0.01" data-zone="${zone}" data-key="${k}" placeholder="%">`;
       row.appendChild(control);
     });
@@ -129,13 +139,11 @@
     zonesContainer.appendChild(wrapper);
   });
 
-  // Helpers
   function readInputs() {
     const inputs = document.querySelectorAll('#zonesContainer input[type=number]');
     const obj = { state: document.getElementById('state').value, zones: {} };
     inputs.forEach(inp => {
-      const zone = inp.dataset.zone;
-      const key = inp.dataset.key;
+      const zone = inp.dataset.zone, key = inp.dataset.key;
       if (!obj.zones[zone]) obj.zones[zone] = {};
       const v = inp.value.trim();
       obj.zones[zone][key] = v === '' ? null : Number(v);
@@ -144,123 +152,152 @@
   }
 
   function populateFormFrom(obj) {
-    if(!obj || !obj.zones) return;
+    if (!obj || !obj.zones) return;
     document.querySelectorAll('#zonesContainer input[type=number]').forEach(inp => {
-      const zone = inp.dataset.zone;
-      const key = inp.dataset.key;
-      if(obj.zones[zone] && obj.zones[zone][key] !== undefined && obj.zones[zone][key] !== null){
+      const zone = inp.dataset.zone, key = inp.dataset.key;
+      if (obj.zones[zone] && obj.zones[zone][key] !== undefined && obj.zones[zone][key] !== null) {
         inp.value = obj.zones[zone][key];
-      } else {
-        inp.value = '';
-      }
+      } else inp.value = '';
     });
     renderPreview(obj);
-  }
-
-  function renderPreview(obj) {
-    const tbody = document.getElementById('previewBody');
-    tbody.innerHTML = '';
-    ZONES.forEach(zone => {
-      const tr = document.createElement('tr');
-      const zoneCell = document.createElement('td');
-      zoneCell.textContent = zone;
-      tr.appendChild(zoneCell);
-      KPI_KEYS.forEach(k => {
-        const td = document.createElement('td');
-        const v = obj && obj.zones && obj.zones[zone] && obj.zones[zone][k];
-        td.textContent = (v === null || v === undefined) ? '-' : (Number.isFinite(v) ? v : '-');
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
-    });
     document.getElementById('savedJson').value = JSON.stringify(obj, null, 2);
   }
 
-  // Save/load functions
-  function saveToStorage(obj) {
-    // Basic validation: all numbers between 0-100 or null
-    for(const zone of ZONES){
-      for(const k of KPI_KEYS){
-        const v = obj.zones[zone][k];
-        if (v !== null && v !== undefined) {
-          if (isNaN(v) || v < 0 || v > 100){
-            return { ok:false, message: `Invalid value for ${zone} - ${k}. Use 0 to 100.` };
-          }
-        }
-      }
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    return { ok:true };
+  function renderPreview(obj){
+    const tbody = document.getElementById('previewBody');
+    tbody.innerHTML = '';
+    ZONES.forEach(z => {
+      const tr = document.createElement('tr');
+      const zoneCell = document.createElement('td'); zoneCell.textContent = z;
+      const rowObj = obj && obj.zones && obj.zones[z] ? obj.zones[z] : {};
+      const cells = KPI_KEYS.map(k => {
+        const td = document.createElement('td');
+        const v = rowObj[k];
+        td.textContent = (v === null || v === undefined) ? '-' : (Number.isFinite(v) ? v + '%' : '-');
+        return td;
+      });
+      tr.appendChild(zoneCell);
+      cells.forEach(c => tr.appendChild(c));
+      tbody.appendChild(tr);
+    });
   }
 
-  function loadFromStorage() {
+  // robust server save: handles non-JSON responses and network errors
+  async function saveToServer(datasetKey, obj){
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch(e){
-      console.error(e);
-      return null;
+      const resp = await fetch(API_SAVE, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ dataset: datasetKey, state: obj.state, zones: obj.zones })
+      });
+
+      const ctype = resp.headers.get('content-type') || '';
+
+      if (ctype.includes('application/json')) {
+        const json = await resp.json();
+        return { ok: resp.ok, status: resp.status, body: json };
+      } else {
+        // read as text (useful when server returns HTML error page)
+        const text = await resp.text();
+        const preview = text.length > 800 ? text.slice(0,800) + '... (truncated)' : text;
+        return { ok: resp.ok, status: resp.status, body: preview, warning: 'Non-JSON response from server' };
+      }
+    } catch (err) {
+      return { ok: false, error: err.message || String(err) };
     }
   }
 
-  // Events
-  document.getElementById('saveBtn').addEventListener('click', () => {
+  document.getElementById('saveBtn').addEventListener('click', async () => {
     const obj = readInputs();
-    const res = saveToStorage(obj);
+    // local fallback
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch(e){ console.warn('localStorage save failed', e); }
+
+    // send to server
+    const res = await saveToServer(STORAGE_KEY, obj);
     const msg = document.getElementById('msg');
-    if(!res.ok){ msg.textContent = res.message; msg.style.color = '#ffb3b3'; return; }
-    msg.textContent = 'Saved successfully.';
-    msg.style.color = '#b3ffb3';
+    msg.style.display = 'block';
+
+    if (res.ok && res.body && typeof res.body === 'object' && res.body.success) {
+      msg.textContent = 'Saved to server ✅';
+      msg.className = 'msg ok';
+    } else {
+      // build helpful message
+      let text = 'Server save failed: ';
+      if (res.error) {
+        text += res.error + ' (network/CORS/server unreachable)';
+      } else if (res.warning) {
+        text += `${res.warning} (HTTP ${res.status}). Server returned: ${res.body}`;
+      } else if (res.body && res.body.error) {
+        text += `API error: ${res.body.error}`;
+      } else {
+        text += `HTTP ${res.status} — response: ${JSON.stringify(res.body)}`;
+      }
+      msg.textContent = text;
+      msg.className = 'msg err';
+      console.error('saveToServer detail:', res);
+    }
     document.getElementById('savedJson').value = JSON.stringify(obj, null, 2);
   });
 
-  document.getElementById('clearBtn').addEventListener('click', () => {
+  document.getElementById('clearBtn').addEventListener('click', async () => {
     if (!confirm('Clear saved KPI data?')) return;
-    localStorage.removeItem(STORAGE_KEY);
-    document.getElementById('msg').textContent = 'Saved data cleared.';
-    document.getElementById('savedJson').value = '';
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e){console.warn(e);}
+    // send empty dataset to server to clear values (server will treat empty zones object accordingly)
+    const res = await saveToServer(STORAGE_KEY, { state:'KEDAH&PERLIS', zones:{} });
+    const msg = document.getElementById('msg');
+    msg.style.display = 'block';
+    if (res.ok && res.body && res.body.success) {
+      msg.textContent = 'Saved data cleared on server ✅';
+      msg.className = 'msg ok';
+    } else {
+      msg.textContent = 'Saved data cleared locally. Server clear may have failed.';
+      msg.className = 'msg err';
+      console.error('clear server detail:', res);
+    }
     populateFormFrom({ state: 'KEDAH&PERLIS', zones: {} });
   });
 
-  // copy json button
   document.getElementById('copyJson').addEventListener('click', () => {
     const txt = document.getElementById('savedJson').value;
-    if(!txt) return alert('No saved JSON');
-    navigator.clipboard?.writeText(txt).then(()=> alert('Copied!'), ()=> alert('Copy failed'));
+    if (!txt) return alert('No saved JSON');
+    navigator.clipboard?.writeText(txt).then(() => alert('Copied!'), () => alert('Copy failed'));
   });
 
-  // import json
   document.getElementById('importBtn').addEventListener('click', () => {
     const raw = document.getElementById('importJson').value.trim();
-    if(!raw) return alert('Paste JSON to import');
+    if (!raw) return alert('Paste JSON to import');
     try {
       const obj = JSON.parse(raw);
-      // minimal shape check
-      if(!obj.zones) throw new Error('Invalid structure: missing zones');
-      // set into localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+      if (!obj.zones) throw new Error('Invalid structure: missing zones');
+      // populate form and save locally (and optionally to server)
       populateFormFrom(obj);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch(e){ console.warn('localStorage set failed', e); }
       document.getElementById('msg').textContent = 'Imported successfully.';
-    } catch(e){
+      document.getElementById('msg').className = 'msg ok';
+      // also push to server (non-blocking)
+      saveToServer(STORAGE_KEY, obj).then(r => { if(!r.ok) console.warn('Server import save failed', r); });
+    } catch (e) {
       alert('Invalid JSON: ' + e.message);
     }
   });
 
-  document.getElementById('resetPreview').addEventListener('click', () => {
+  document.getElementById('reloadPreview').addEventListener('click', () => {
     const cur = loadFromStorage();
-    if(cur) populateFormFrom(cur);
-    else populateFormFrom({ state: 'KEDAH&PERLIS', zones: {} });
+    if (cur) populateFormFrom(cur);
   });
 
-  // init: load saved
+document.getElementById('backBtn').addEventListener('click', () => {
+  window.location.href = "KPI.html"; // change if your dashboard filename is different
+});
+
+  function loadFromStorage(){ try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; } }
+
   (function init(){
     const cur = loadFromStorage();
     if (cur) populateFormFrom(cur);
     else {
-      // initialize empty structure so preview shows dashes
       const empty = { state: 'KEDAH&PERLIS', zones: {} };
-      ZONES.forEach(z => { empty.zones[z] = {}; KPI_KEYS.forEach(k=> empty.zones[z][k] = null); });
+      ZONES.forEach(z => { empty.zones[z] = {}; KPI_KEYS.forEach(k => empty.zones[z][k] = null); });
       populateFormFrom(empty);
     }
   })();

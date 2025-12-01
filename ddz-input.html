@@ -1,59 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>DDZ Input — Kedah & Perlis</title>
 <style>
-  :root{
-    --bg:#d47c08; --muted:#eeeef0; --accent:#ff9b2e;
-  }
+  :root{--bg:#d47c08;--muted:#eeeef0;--accent:#ff9b2e}
   *{box-sizing:border-box}
   body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#fff;background:linear-gradient(180deg,var(--bg),#0b0710 60%);padding:20px}
   .wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 360px;gap:18px}
-  .card{background:linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.45));padding:18px;border-radius:12px;border:1px solid rgba(255,155,46,0.04)}
-  h1{margin:0 0 8px;font-family:Orbitron, sans-serif;color:#ffd7ab}
+  .card{background:linear-gradient(180deg,rgba(0,0,0,0.55),rgba(0,0,0,0.45));padding:18px;border-radius:12px;border:1px solid rgba(255,155,46,0.04)}
+  h1{margin:0 0 8px;font-family:Orbitron,sans-serif;color:#ffd7ab}
   p.lead{color:var(--muted);margin:6px 0 16px}
-  .zone{margin-bottom:12px}
-  .zone-title{font-weight:800;color:#ffd7ab;margin-bottom:8px}
-  .grid{display:flex;gap:8px;flex-wrap:wrap}
-  .grid .field{display:flex;flex-direction:column;gap:6px}
-  input[type="number"]{width:110px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff}
-  .actions{display:flex;gap:8px;margin-top:12px}
-  button{padding:10px 12px;border-radius:8px;border:none;font-weight:800;cursor:pointer}
+  .grid{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  label{display:block;color:#ffd7ab;font-weight:800;font-size:13px;margin-bottom:6px}
+  input[type=number]{width:140px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff}
+  .actions{display:flex;gap:8px;margin-top:14px}
+  button{padding:10px 14px;border-radius:8px;border:none;font-weight:800;cursor:pointer}
   .btn-save{background:linear-gradient(90deg,var(--accent),#ff6b00);color:#111}
   .btn-clear{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+  .btn-back{background:transparent;border:1px solid rgba(255,155,46,0.45);color:#ffd7ab;padding:10px 14px;border-radius:8px;font-weight:800;cursor:pointer}
   textarea{width:100%;height:120px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px}
   .note{font-size:13px;color:#ffd7ab;margin-top:10px}
   table{width:100%;border-collapse:collapse;margin-top:10px}
   th,td{padding:8px;border:1px solid rgba(255,155,46,0.04);color:var(--muted);font-weight:700;text-align:center}
-  .preview{margin-top:10px}
-  @media(max-width:980px){ .wrap{grid-template-columns:1fr} }
+  .msg{margin-top:10px;font-weight:800}
+  .ok{color:#b3ffb3}
+  .err{color:#ffb3b3}
+  @media(max-width:980px){ .wrap{grid-template-columns:1fr} input[type=number]{width:100%} }
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <h1>DDZ Input — KEDAH & PERLIS</h1>
-      <p class="lead">Enter percentage values (0–100) for ISR and MCAT per zone. Click <strong>Save DDZ</strong> to store locally.</p>
+      <p class="lead">Enter percentages (0–100) for ISR and MCAT per zone. Click <strong>Save DDZ</strong>.</p>
 
-      <form id="ddzForm" onsubmit="return false;">
-        <input type="hidden" id="state" value="KEDAH&PERLIS">
-        <div id="zones"></div>
+      <input type="hidden" id="state" value="KEDAH&PERLIS">
 
-        <div class="actions">
-          <button id="saveBtn" class="btn-save" type="button">Save DDZ</button>
-          <button id="clearBtn" class="btn-clear" type="button">Clear Saved</button>
-        </div>
+      <div id="zones"></div>
 
-        <div id="msg" style="margin-top:10px;color:#b3ffb3"></div>
-      </form>
-      <div class="note">Fields: ISR, MCAT. Use import/export to copy between machines.</div>
+      <div class="actions" style="margin-top:12px">
+        <button id="backBtn" class="btn-back" type="button">← Back to Dashboard</button>
+        <button id="saveBtn" class="btn-save" type="button">Save DDZ</button>
+        <button id="clearBtn" class="btn-clear" type="button">Clear Saved</button>
+      </div>
+
+      <div id="msg" class="msg ok" style="display:none"></div>
+      <div class="note">Saved dataset key: <strong>ddz_kedah_perlis_v1</strong></div>
     </div>
 
     <div class="card">
       <h1>Import / Export</h1>
-      <p class="lead">Preview saved DDZ JSON or paste JSON to import.</p>
+      <p class="lead">Preview or paste JSON to import.</p>
 
       <div>
         <strong>Saved JSON</strong>
@@ -76,139 +75,136 @@
 
       <div class="preview">
         <strong>Preview</strong>
-        <table id="previewTable">
-          <thead><tr><th>Zone</th><th>ISR</th><th>MCAT</th></tr></thead>
-          <tbody id="previewBody"></tbody>
-        </table>
+        <table id="previewTable"><thead><tr><th>Zone</th><th>ISR</th><th>MCAT</th></tr></thead><tbody id="previewBody"></tbody></table>
       </div>
     </div>
   </div>
 
 <script>
-  const ZONES = ['ALOR SETAR','JITRA','KULIM','LANGKAWI','PERLIS','SG PETANI'];
-  const KEYS = ['ISR','MCAT'];
+  // ===== CONFIG =====
+  const API_BASE = 'http://localhost:3000'; // change if your server runs elsewhere
+  const API_SAVE = `${API_BASE}/api/ddz/save`; // <-- note /api/ddz/save
   const STORAGE_KEY = 'ddz_kedah_perlis_v1';
+  // ==================
 
-  const zonesContainer = document.getElementById('zones');
+  const ZONES = ['ALOR SETAR','KULIM','PERLIS','LANGKAWI','SG PETANI','JITRA'];
+  const KEYS = ['ISR','MCAT'];
 
-  // build inputs
-  ZONES.forEach(zone=>{
-    const wrap = document.createElement('div');
-    wrap.className = 'zone';
-    wrap.innerHTML = `<div class="zone-title">${zone}</div>`;
-    const grid = document.createElement('div');
-    grid.className = 'grid';
-    KEYS.forEach(k=>{
-      const fd = document.createElement('div');
-      fd.className = 'field';
-      fd.innerHTML = `<label style="font-size:12px;color:#ffd7ab">${k}</label>
-        <input type="number" min="0" max="100" step="0.01" data-zone="${zone}" data-key="${k}" placeholder="%">`;
-      grid.appendChild(fd);
+  // build zone inputs
+  const zonesDiv = document.getElementById('zones');
+  ZONES.forEach(z => {
+    const wrapper = document.createElement('div');
+    wrapper.style.marginBottom = '12px';
+    wrapper.innerHTML = `<div style="font-weight:800;color:#ffd7ab;margin-bottom:8px">${z}</div>`;
+    const grid = document.createElement('div'); grid.className = 'grid';
+    KEYS.forEach(k => {
+      const f = document.createElement('div'); f.style.display='flex'; f.style.flexDirection='column';
+      const lbl = document.createElement('label'); lbl.textContent = k; lbl.style.fontSize='12px'; lbl.style.color='#ffd7ab';
+      const inp = document.createElement('input'); inp.type='number'; inp.min='0'; inp.max='100'; inp.step='0.01';
+      inp.dataset.zone = z; inp.dataset.key = k; inp.placeholder = '%';
+      f.appendChild(lbl); f.appendChild(inp); grid.appendChild(f);
     });
-    wrap.appendChild(grid);
-    zonesContainer.appendChild(wrap);
+    wrapper.appendChild(grid); zonesDiv.appendChild(wrapper);
   });
 
-  function readObj(){
+  function readForm(){
     const inputs = document.querySelectorAll('#zones input[type=number]');
     const obj = { state: document.getElementById('state').value, zones: {} };
-    inputs.forEach(inp=>{
-      const zone = inp.dataset.zone, key = inp.dataset.key;
-      if(!obj.zones[zone]) obj.zones[zone] = {};
-      const v = inp.value.trim();
-      obj.zones[zone][key] = v === '' ? null : Number(v);
+    inputs.forEach(i=>{
+      const z = i.dataset.zone, k = i.dataset.key; if(!obj.zones[z]) obj.zones[z]={};
+      const v = i.value.trim(); obj.zones[z][k] = v === '' ? null : Number(v);
     });
     return obj;
   }
 
-  function populateFrom(obj){
+  function populateForm(obj){
     if(!obj || !obj.zones) return;
-    document.querySelectorAll('#zones input[type=number]').forEach(inp=>{
-      const zone = inp.dataset.zone, key = inp.dataset.key;
-      if(obj.zones[zone] && obj.zones[zone][key] !== undefined && obj.zones[zone][key] !== null){
-        inp.value = obj.zones[zone][key];
-      } else inp.value = '';
+    document.querySelectorAll('#zones input[type=number]').forEach(i=>{
+      const z=i.dataset.zone, k=i.dataset.key;
+      if(obj.zones[z] && obj.zones[z][k] !== undefined && obj.zones[z][k] !== null) i.value = obj.zones[z][k]; else i.value='';
     });
     renderPreview(obj);
-    document.getElementById('savedJson').value = JSON.stringify(obj, null, 2);
+    document.getElementById('savedJson').value = JSON.stringify(obj,null,2);
   }
 
   function renderPreview(obj){
-    const tbody = document.getElementById('previewBody');
-    tbody.innerHTML = '';
+    const tbody = document.getElementById('previewBody'); tbody.innerHTML='';
     ZONES.forEach(z=>{
       const tr = document.createElement('tr');
-      const zoneCell = document.createElement('td'); zoneCell.textContent = z;
-      const isr = document.createElement('td'); const mcat = document.createElement('td');
-      const v = obj && obj.zones && obj.zones[z] ? obj.zones[z] : {};
-      isr.textContent = (v.ISR === null || v.ISR === undefined) ? '-' : v.ISR + '%';
-      mcat.textContent = (v.MCAT === null || v.MCAT === undefined) ? '-' : v.MCAT + '%';
-      tr.append(zoneCell, isr, mcat); tbody.appendChild(tr);
+      const tdZone = document.createElement('td'); tdZone.textContent = z; tr.appendChild(tdZone);
+      KEYS.forEach(k=>{
+        const td = document.createElement('td');
+        const v = obj && obj.zones && obj.zones[z] ? obj.zones[z][k] : null;
+        td.textContent = (v === null || v === undefined) ? '-' : (Number.isFinite(v) ? v + '%' : '-');
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
     });
   }
 
-  function saveToStorage(obj){
-    for(const z of ZONES){
-      for(const k of KEYS){
-        const v = obj.zones[z][k];
-        if(v !== null && v !== undefined){
-          if(isNaN(v) || v < 0 || v > 100) return {ok:false, message:`Invalid ${z} ${k}. Use 0–100.`};
-        }
-      }
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    return {ok:true};
+  async function saveToServer(datasetKey, obj){
+    try {
+      const resp = await fetch(API_SAVE, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ dataset: datasetKey, state: obj.state, zones: obj.zones })
+      });
+      const ctype = resp.headers.get('content-type') || '';
+      if (ctype.includes('application/json')) return { ok: resp.ok, body: await resp.json() };
+      const text = await resp.text(); return { ok: resp.ok, body: text, warning:'non-json' };
+    } catch(e){ return { ok:false, error: e.message || String(e) }; }
   }
 
-  document.getElementById('saveBtn').addEventListener('click', ()=>{
-    const obj = readObj();
-    const res = saveToStorage(obj);
-    const msg = document.getElementById('msg');
-    if(!res.ok){ msg.textContent = res.message; msg.style.color='#ffb3b3'; return; }
-    msg.textContent = 'Saved successfully.'; msg.style.color='#b3ffb3';
-    document.getElementById('savedJson').value = JSON.stringify(obj, null, 2);
-    renderPreview(obj);
+  document.getElementById('saveBtn').addEventListener('click', async ()=>{
+    const obj = readForm();
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch(e){console.warn(e);}
+    const res = await saveToServer(STORAGE_KEY, obj);
+    const msg = document.getElementById('msg'); msg.style.display='block';
+    if(res.ok && res.body && res.body.success){ msg.textContent = 'Saved to server ✅'; msg.className='msg ok'; }
+    else { msg.textContent = 'Server save failed: ' + (res.error || JSON.stringify(res.body)); msg.className='msg err'; console.error(res); }
+    document.getElementById('savedJson').value = JSON.stringify(obj,null,2);
   });
 
-  document.getElementById('clearBtn').addEventListener('click', ()=>{
+  document.getElementById('clearBtn').addEventListener('click', async ()=>{
     if(!confirm('Clear saved DDZ data?')) return;
-    localStorage.removeItem(STORAGE_KEY);
-    document.getElementById('msg').textContent = 'Saved data cleared.'; document.getElementById('savedJson').value='';
-    populateFrom({ state:'KEDAH&PERLIS', zones: {} });
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+    const res = await saveToServer(STORAGE_KEY, { state:'KEDAH&PERLIS', zones:{} });
+    const msg = document.getElementById('msg'); msg.style.display='block';
+    if(res.ok && res.body && res.body.success){ msg.textContent='Cleared on server ✅'; msg.className='msg ok'; }
+    else { msg.textContent='Cleared locally. Server clear may have failed.'; msg.className='msg err'; }
+    populateForm({ state:'KEDAH&PERLIS', zones:{} });
   });
+
+  document.getElementById('backBtn').addEventListener('click', ()=> window.location.href = 'KPI.html');
 
   document.getElementById('copyJson').addEventListener('click', ()=>{
-    const txt = document.getElementById('savedJson').value;
-    if(!txt) return alert('No saved JSON'); navigator.clipboard?.writeText(txt).then(()=>alert('Copied'),()=>alert('Copy failed'));
+    const txt = document.getElementById('savedJson').value; if(!txt) return alert('No saved JSON');
+    navigator.clipboard?.writeText(txt).then(()=>alert('Copied!'),()=>alert('Copy failed'));
   });
 
   document.getElementById('importBtn').addEventListener('click', ()=>{
-    const raw = document.getElementById('importJson').value.trim();
-    if(!raw) return alert('Paste JSON to import');
-    try{
+    const raw = document.getElementById('importJson').value.trim(); if(!raw) return alert('Paste JSON to import');
+    try {
       const obj = JSON.parse(raw);
       if(!obj.zones) throw new Error('Invalid structure: missing zones');
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-      populateFrom(obj);
-      document.getElementById('msg').textContent = 'Imported successfully.'; document.getElementById('msg').style.color='#b3ffb3';
+      populateForm(obj); localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+      saveToServer(STORAGE_KEY, obj).then(r=>{ if(!r.ok) console.warn('Server import failed', r); });
+      document.getElementById('msg').textContent = 'Imported successfully'; document.getElementById('msg').className='msg ok';
     } catch(e){ alert('Invalid JSON: '+e.message); }
   });
 
   document.getElementById('reloadPreview').addEventListener('click', ()=>{
-    const cur = loadFromStorage();
-    if(cur) populateFrom(cur);
+    const cur = (function(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e){return null;} })();
+    if(cur) populateForm(cur);
   });
 
-  function loadFromStorage(){ try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; } }
-
-  // init
   (function init(){
-    const cur = loadFromStorage();
-    if(cur) populateFrom(cur);
+    const cur = (function(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e){return null;} })();
+    if(cur) populateForm(cur);
     else {
       const empty = { state:'KEDAH&PERLIS', zones:{} };
-      ZONES.forEach(z => { empty.zones[z] = {}; KEYS.forEach(k => empty.zones[z][k] = null); });
-      populateFrom(empty);
+      ZONES.forEach(z=>{ empty.zones[z] = {}; KEYS.forEach(k => empty.zones[z][k] = null); });
+      populateForm(empty);
     }
   })();
 </script>

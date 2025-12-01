@@ -43,24 +43,21 @@
       border:1px solid rgba(255,155,46,0.04);min-height:calc(100vh - 40px);
     }
     /* Make left nav stretch to match main content height */
-.app {
-  display: flex;
-  gap: 20px;
-  align-items: stretch;    /* IMPORTANT: lets children stretch to same height */
-  align-content: stretch;
-  min-height: 100vh;       /* ensure full viewport available */
-}
-
-/* allow sidebar to expand to fill the height of .app */
-nav.sidebar {
-  /* remove fixed/min-height that prevents resizing (if present) */
-  min-height: 0;           /* let flexbox control height */
-  height: auto;            /* allow it to stretch */
-  align-self: stretch;     /* ensure it stretches vertically inside .app */
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
+    .app {
+      display: flex;
+      gap: 20px;
+      align-items: stretch;
+      align-content: stretch;
+      min-height: 100vh;
+    }
+    nav.sidebar {
+      min-height: 0;
+      height: auto;
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
 
     .brand{display:flex;gap:12px;align-items:center}
     .brand img{height:44px;border-radius:8px;object-fit:cover}
@@ -172,15 +169,14 @@ nav.sidebar {
         <a class="navlink" href="https://tm365.sharepoint.com/sites/PERFORMANCENOKEDAHPERLIS/WEEKLY%20RAW%20DATA/Forms/AllItems.aspx">PERFORMANCE</a>
         <a class="navlink" href="weekly.html">UPLOAD WEEKLY SUMMARY</a>
         <a class="navlink" href="monthly.html">UPLOAD MONTHLY SUMMARY </a>
-        <a class="navlink" href="">WEEKLY SUMMARY</a>
-        <a class="navlink" href="kpi-input.html">INPUT WEEKLY SUMMARY</a>
         <a class="navlink" href="ddz-input.html">INPUT DDZ WEEKLY SUMMARY</a>
+        <a class="navlink" href="kpi-input.html">INPUT NFF WEEKLY SUMMARY</a>
       </div>
 
       <div class="spacer"></div>
       <button class="logout-btn" id="logoutBtn">Logout</button>
     </nav>
-    
+
     <main class="content">
       <div class="topbar">
         <div>
@@ -246,6 +242,7 @@ nav.sidebar {
         </div>
       </div>
 
+      <!-- KPI card (main dataset) -->
       <h2 class="section-title">📊 KPI Percentages — KEDAH & PERLIS</h2>
       <div class="kpi-card card">
         <div class="kpi-wrap">
@@ -260,6 +257,9 @@ nav.sidebar {
           </div>
         </div>
       </div>
+
+      <!-- DDZ card will be inserted by script after KPI card -->
+      <div id="ddzPlaceholder"></div>
 
     </main>
   </div>
@@ -276,109 +276,117 @@ nav.sidebar {
       window.location.href = 'index.html';
     });
 
-    // KPI renderer (improved with tooltip details)
-    (function renderKPI(){
-      const STORAGE_KEY = 'kpi_kedah_perlis_v1';
-      const raw = localStorage.getItem(STORAGE_KEY);
+    /**************************
+     * Helpers for formatting
+     **************************/
+    function formatPercent(value){
+      if (value === null || value === undefined || value === '') return '-';
+      const num = Number(value);
+      if (!Number.isFinite(num)) return String(value);
+      let s = num.toFixed(2).replace(/\.00$/,'').replace(/(\.\d)0$/,'$1');
+      return s + '%';
+    }
+
+    const THRESHOLDS = {
+      MCATi: 98.0,
+      MCATi_NO_SHOW: 0.6,
+      NPSA: 72.0,
+      NPSF: 91.0,
+      MCATr: 90.0,
+      MCATr_NO_SHOW: 0.4,
+      CTIR: 75.0
+    };
+
+    function classify(key, value){
+      if (value === null || value === undefined || value === '') return {cls:'kpi-empty', status:'nodata'};
+      const num = Number(value);
+      if (!Number.isFinite(num)) return {cls:'kpi-empty', status:'nodata'};
+      const t = THRESHOLDS[key];
+      if (t === undefined) return {cls:'kpi-empty', status:'nodata'};
+      if (num >= t) return {cls:'kpi-pass', status:'pass', threshold:t, diff: +(num - t)};
+      return {cls:'kpi-fail', status:'fail', threshold:t, diff: +(num - t)};
+    }
+
+    /**************************
+     * Fetch dataset from server
+     **************************/
+    async function loadDataset(datasetKey){
+      try {
+        const res = await fetch(`/api/kpi/${encodeURIComponent(datasetKey)}`);
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          console.warn('Dataset not available on server:', datasetKey, json);
+          return null;
+        }
+        return json.data;
+      } catch (err) {
+        console.error('loadDataset error', err);
+        return null;
+      }
+    }
+
+    /**************************
+     * Render main KPI
+     **************************/
+    (async function renderKPI(){
       const target = document.getElementById('kpiContent');
+      const data = await loadDataset('kpi_kedah_perlis_v1') || JSON.parse(localStorage.getItem('kpi_kedah_perlis_v1') || 'null') || { state:'KEDAH&PERLIS', zones: {} };
 
-      const THRESHOLDS = {
-        MCATi: 98.0,
-        MCATi_NO_SHOW: 0.6,
-        NPSA: 72.0,
-        NPSF: 91.0,
-        MCATr: 90.0,
-        MCATr_NO_SHOW: 0.4,
-        CTIR: 75.0
-      };
-
+      // build table
       const keys = ['MCATi','MCATi_NO_SHOW','NPSA','NPSF','MCATr','MCATr_NO_SHOW','CTIR'];
       const headerLabels = ['Zone','MCATi','MCATi NO SHOW','NPSA','NPSF','MCATr','MCATr NO SHOW','CTIR'];
       const zonesOrder = ['ALOR SETAR','JITRA','KULIM','LANGKAWI','PERLIS','SG PETANI'];
 
-      function formatPercent(value){
-        if (value === null || value === undefined || value === '') return '-';
-        const num = Number(value);
-        if (!Number.isFinite(num)) return String(value);
-        let s = num.toFixed(2).replace(/\.00$/,'').replace(/(\.\d)0$/,'$1');
-        return s + '%';
-      }
+      let html = '<div style="font-weight:800;color:#ffd7ab;margin-bottom:8px">State: ' + (data.state || 'KEDAH&PERLIS') + '</div>';
+      html += '<table class="kpi-table"><thead><tr>';
+      headerLabels.forEach(h => { html += '<th>' + h + '</th>'; });
+      html += '</tr></thead><tbody>';
 
-      function classify(key, value){
-        if (value === null || value === undefined || value === '') return {cls:'kpi-empty', status:'nodata'};
-        const num = Number(value);
-        if (!Number.isFinite(num)) return {cls:'kpi-empty', status:'nodata'};
-        const t = THRESHOLDS[key];
-        if (t === undefined) return {cls:'kpi-empty', status:'nodata'};
-        if (num >= t) return {cls:'kpi-pass', status:'pass', threshold:t, diff: +(num - t)};
-        return {cls:'kpi-fail', status:'fail', threshold:t, diff: +(num - t)};
-      }
+      zonesOrder.forEach(zone => {
+        const row = data.zones[zone] || {};
+        html += '<tr>';
+        html += '<td class="zone-cell">' + zone + '</td>';
+        keys.forEach(k => {
+          const v = row[k];
+          const disp = formatPercent(v);
+          const info = classify(k, v);
+          let tooltip = '';
+          if(info.status === 'nodata') tooltip = 'No data';
+          else {
+            const sign = info.diff >= 0 ? 'above' : 'below';
+            tooltip = `${disp} — ${Math.abs(info.diff).toFixed(2)}% ${sign} threshold (${info.threshold}%)`;
+          }
 
-      if(!raw){
-        target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">No KPI values saved yet. Open <strong>kpi-input.html</strong> to add percentages for zones.</div>';
-        return;
-      }
-
-      try {
-        const data = JSON.parse(raw);
-        if(!data.zones){
-          target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">Saved KPI data has wrong format. Please re-import from input page.</div>';
-          return;
-        }
-
-        let html = '<div style="font-weight:800;color:#ffd7ab;margin-bottom:8px">State: ' + (data.state || 'KEDAH&PERLIS') + '</div>';
-        html += '<table class="kpi-table"><thead><tr>';
-        headerLabels.forEach(h => { html += '<th>' + h + '</th>'; });
-        html += '</tr></thead><tbody>';
-
-        zonesOrder.forEach(zone => {
-          const row = data.zones[zone] || {};
-          html += '<tr>';
-          html += '<td class="zone-cell">' + zone + '</td>';
-          keys.forEach(k => {
-            const v = row[k];
-            const disp = formatPercent(v);
-            const info = classify(k, v);
-            // build tooltip text
-            let tooltip = '';
-            if(info.status === 'nodata') tooltip = 'No data';
-            else {
-              const sign = info.diff >= 0 ? 'above' : 'below';
-              tooltip = `${disp} — ${Math.abs(info.diff).toFixed(2)}% ${sign} threshold (${info.threshold}%)`;
-            }
-
-            if(info.status === 'nodata'){
-              html += `<td class="${info.cls}"><span class="kpi-badge kpi-empty">${disp}</span></td>`;
-            } else {
-              html += `<td class="${info.cls}"><span class="kpi-badge ${info.cls}" aria-label="${tooltip}">${disp}</span>`;
-              html += `<div class="kpi-tooltip">${tooltip}</div></td>`;
-            }
-          });
-          html += '</tr>';
+          if(info.status === 'nodata'){
+            html += `<td class="${info.cls}"><span class="kpi-badge kpi-empty">${disp}</span></td>`;
+          } else {
+            html += `<td class="${info.cls}"><span class="kpi-badge ${info.cls}" aria-label="${tooltip}">${disp}</span>`;
+            html += `<div class="kpi-tooltip">${tooltip}</div></td>`;
+          }
         });
+        html += '</tr>';
+      });
 
-        html += '</tbody></table>';
-        target.innerHTML = html;
-      } catch(e){
-        console.error(e);
-        target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">Error reading KPI data. Please re-save from the input page.</div>';
-      }
+      html += '</tbody></table>';
+      target.innerHTML = html;
     })();
-    /* ---- DDZ renderer — paste into KPI.html AFTER your existing renderer ---- */
-(function renderDDZ(){
-  const STORAGE_KEY = 'ddz_kedah_perlis_v1';
-  const raw = localStorage.getItem(STORAGE_KEY);
-  // find a place to insert the DDZ card: we'll append after the KPI card container
-  const content = document.querySelector('main.content');
-  if(!content) return;
 
-  // build wrapper (inject once)
-  let ddzContainer = document.getElementById('ddzContainer');
-  if(!ddzContainer){
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = `
+    (async function renderDDZ(){
+    const placeholderParent = document.querySelector('main.content') || document.body;
+    // create placeholder container if not present
+    let ddzPlaceholder = document.getElementById('ddzPlaceholder');
+    if (!ddzPlaceholder) {
+      ddzPlaceholder = document.createElement('div');
+      ddzPlaceholder.id = 'ddzPlaceholder';
+      // insert after KPI card if that exists
+      const kpiCard = document.querySelector('.kpi-card');
+      if (kpiCard && kpiCard.parentNode) kpiCard.parentNode.insertBefore(ddzPlaceholder, kpiCard.nextSibling);
+      else placeholderParent.appendChild(ddzPlaceholder);
+    }
+
+    ddzPlaceholder.innerHTML = `
       <h2 class="section-title">📌 DDZ KPIs — KEDAH & PERLIS</h2>
-      <div class="kpi-card card" id="ddzContainer">
+      <div class="kpi-card card" id="ddzCard">
         <div class="kpi-wrap">
           <div class="kpi-legend">
             <div class="legend-item"><span class="legend-color" style="background:linear-gradient(180deg,#3b82f6,#2563eb)"></span> DDZ Value</div>
@@ -386,73 +394,51 @@ nav.sidebar {
           </div>
           <div class="table-container"><div id="ddzContent" class="kpi-empty">Loading DDZ data...</div></div>
         </div>
-      </div>`;
-    // Insert DDZ section at the end of main content (or just after the KPI card if you prefer)
-    // Place after the KPI card block
-    const kpiCard = document.querySelector('.kpi-card');
-    if(kpiCard && kpiCard.parentNode){
-      kpiCard.parentNode.insertBefore(wrapper, kpiCard.nextSibling);
-    } else {
-      content.appendChild(wrapper);
-    }
-    ddzContainer = document.getElementById('ddzContainer');
-  }
+      </div>
+    `;
 
-  const target = document.getElementById('ddzContent');
-
-  // zones and keys
-  const zonesOrder = ['ALOR SETAR','JITRA','KULIM','LANGKAWI','PERLIS','SG PETANI '];
-  const KEYS = ['ISR','MCAT'];
-
-  function fmt(v){
-    if(v === null || v === undefined || v === '') return '-';
-    const n = Number(v);
-    if(!Number.isFinite(n)) return String(v);
-    return (Math.round(n * 100) / 100).toString().replace(/\.00$/,'').replace(/(\.\d)0$/,'$1') + '%';
-  }
-
-  try {
-    if(!raw){
-      target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">No DDZ values saved yet. Open <strong>ddz-input.html</strong> to add values.</div>';
-      return;
-    }
-    const data = JSON.parse(raw);
-    if(!data.zones){
-      target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">Saved DDZ data has wrong format. Please re-import from input page.</div>';
-      return;
+    async function loadDDZ(datasetKey){
+      try {
+        const resp = await fetch(`/api/ddz/${encodeURIComponent(datasetKey)}`);
+        if (!resp.ok) return null;
+        const json = await resp.json();
+        return json && json.data ? json.data : null;
+      } catch (e) {
+        console.error('loadDDZ error', e);
+        return null;
+      }
     }
 
-    // build table
-    let html = '<table class="kpi-table"><thead><tr>';
-    html += '<th>Zone</th>';
-    KEYS.forEach(k => html += `<th>${k}</th>`);
-    html += '</tr></thead><tbody>';
+    const data = await loadDDZ('ddz_kedah_perlis_v1') || JSON.parse(localStorage.getItem('ddz_kedah_perlis_v1') || 'null') || { state:'KEDAH&PERLIS', zones:{} };
+    const KEYS = ['ISR','MCAT'];
+    const zonesOrder = ['ALOR SETAR','JITRA','KULIM','LANGKAWI','PERLIS','SG PETANI'];
 
-    zonesOrder.forEach(zone => {
-      const row = data.zones[zone] || {};
-      html += '<tr>';
-      html += `<td class="zone-cell">${zone}</td>`;
-      KEYS.forEach(k=>{
-        const v = row[k];
-        const display = fmt(v);
-        if(display === '-') {
-          html += `<td class="kpi-empty"><span class="kpi-badge kpi-empty">-</span></td>`;
-        } else {
-          // neutral blue badge for DDZ values (no thresholds provided)
-          html += `<td class="kpi-pass"><span class="kpi-badge" style="background:linear-gradient(180deg,#3b82f6,#2563eb)">${display}</span></td>`;
-        }
+    try {
+      let html = '<div style="font-weight:800;color:#ffd7ab;margin-bottom:8px">State: ' + (data.state || 'KEDAH&PERLIS') + '</div>';
+      html += '<table class="kpi-table"><thead><tr><th>Zone</th>';
+      KEYS.forEach(k => html += `<th>${k}</th>`);
+      html += '</tr></thead><tbody>';
+
+      zonesOrder.forEach(zone => {
+        const row = data.zones[zone] || {};
+        html += '<tr>';
+        html += `<td class="zone-cell">${zone}</td>`;
+        KEYS.forEach(k => {
+          const v = row[k];
+          const display = (v === null || v === undefined || v === '') ? '-' : (Number(v).toFixed(2).replace(/\.00$/,'').replace(/(\.\d)0$/,'$1') + '%');
+          if(display === '-') html += `<td class="kpi-empty"><span class="kpi-badge kpi-empty">-</span></td>`;
+          else html += `<td class="kpi-pass"><span class="kpi-badge" style="background:linear-gradient(180deg,#3b82f6,#2563eb)">${display}</span></td>`;
+        });
+        html += '</tr>';
       });
-      html += '</tr>';
-    });
 
-    html += '</tbody></table>';
-    target.innerHTML = html;
-  } catch(e){
-    console.error(e);
-    target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">Error reading DDZ data. Please re-save from the input page.</div>';
-  }
-})();
-
+      html += '</tbody></table>';
+      document.getElementById('ddzContent').innerHTML = html;
+    } catch(e){
+      console.error(e);
+      document.getElementById('ddzContent').innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">Error reading DDZ data.</div>';
+    }
+  })();
   </script>
 </body>
 </html>
