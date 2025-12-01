@@ -1,209 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>KPI Dashboard</title>
-    <style>
-        :root{
-            --bg:#d47c08;
-            --panel:linear-gradient(180deg,#0d0b12,#0a0810);
-            --accent:#ff9b2e;
-            --muted:#eeeef0;
-            --glass:rgba(233, 141, 22, 0.925);
-        }
-        *{box-sizing:border-box}
-        body{
-            margin:0;
-            font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
-            color:#fff;
-            background:radial-gradient(900px 400px at 10% 10%, rgba(255,155,46,0.03), transparent),
-                       linear-gradient(180deg,var(--bg),#0b0710 60%);
-            min-height:100vh;
-            -webkit-font-smoothing:antialiased;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KPI Dashboard — Kedah & Perlis (Pretty)</title>
+  <style>
+    :root{
+      --page-bg-top: #d47c08;
+      --page-bg-bottom: #0b0710;
+      --panel: rgba(15,12,15,0.88);
+      --glass: rgba(255,255,255,0.03);
+      --accent: #ff9b2e;
+      --accent-2: #ff6b00;
+      --muted: #dcdcdc;
+      --card-shadow: 0 12px 40px rgba(2,6,23,0.55);
+      --rounded: 14px;
 
-        .app {
-            display:flex;
-            min-height:100vh;
-        }
-        nav.sidebar {
-            width:260px;
-            background:var(--panel);
-            border-right:1px solid rgba(255,155,46,0.04);
-            padding:20px;
-            display:flex;
-            flex-direction:column;
-            gap:18px;
-        }
-        .brand {
-            display:flex;
-            gap:12px;
-            align-items:center;
-        }
-        .brand img{height:40px;filter:drop-shadow(0 8px 24px rgba(255,155,46,0.06));}
-        .brand h1{font-size:1rem;margin:0;color:#ffd7ab;font-weight:700;letter-spacing:0.6px}
+      --pass: #16a34a;
+      --fail: #ef4444;
+      --neutral: #94a3b8;
+    }
 
-        .navlist{display:flex;flex-direction:column;gap:8px;margin-top:6px}
-        .navlink{
-            display:flex;align-items:center;gap:12px;
-            padding:10px 12px;border-radius:10px;color:var(--muted);
-            text-decoration:none;font-weight:600;
-            border:1px solid transparent;
-        }
-        .navlink:hover{background:rgba(255,155,46,0.06);color:#fff;border-color:rgba(255,155,46,0.04)}
-        .navlink.active{background:linear-gradient(90deg, rgba(255,155,46,0.12), rgba(255,107,0,0.06));color:#fff}
+    /* Base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color:#fff;
+      background:
+        radial-gradient(900px 400px at 8% 8%, rgba(255,155,46,0.03), transparent),
+        linear-gradient(180deg,var(--page-bg-top),var(--page-bg-bottom) 60%);
+      -webkit-font-smoothing:antialiased;
+      padding:20px;
+    }
 
-        .spacer{flex:1}
+    /* Layout */
+    .app{display:flex;gap:20px;align-items:flex-start}
+    nav.sidebar{
+      width:260px;background:linear-gradient(180deg, rgba(6,6,8,0.9), rgba(10,8,12,0.95));
+      padding:18px;border-radius:var(--rounded);box-shadow:var(--card-shadow);
+      border:1px solid rgba(255,155,46,0.04);min-height:calc(100vh - 40px);
+    }
+    /* Make left nav stretch to match main content height */
+.app {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;    /* IMPORTANT: lets children stretch to same height */
+  align-content: stretch;
+  min-height: 100vh;       /* ensure full viewport available */
+}
 
-        .logout-btn{
-            background:transparent;border:1px solid rgb(231, 139, 40);
-            color:var(--accent);padding:10px;border-radius:10px;cursor:pointer;font-weight:700;
-        }
+/* allow sidebar to expand to fill the height of .app */
+nav.sidebar {
+  /* remove fixed/min-height that prevents resizing (if present) */
+  min-height: 0;           /* let flexbox control height */
+  height: auto;            /* allow it to stretch */
+  align-self: stretch;     /* ensure it stretches vertically inside .app */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
 
-        main.content {
-            flex:1;padding:28px;
-        }
-        .topbar{
-            display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;
-        }
-        .title {font-family: "Orbitron",sans-serif;color:#fff;font-size:1.4rem}
-        .card{
-            background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-            border-radius:12px;padding:18px;border:1px solid rgba(255,155,46,0.04);
-            margin-bottom:18px;color:var(--muted);
-        }
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand img{height:44px;border-radius:8px;object-fit:cover}
+    .brand h1{margin:0;color:#ffd7ab;font-weight:800;font-size:1rem}
 
-        h2.section-title{
-            color:#ffd7ab;
-            margin:28px 0 12px;
-            border-bottom:1px solid rgba(255,155,46,0.2);
-            padding-bottom:6px;
-            font-size:1.2rem;
-            font-weight:700;
-            letter-spacing:0.4px;
-        }
+    .navlist{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+    .navlink{
+      display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--muted);
+      text-decoration:none;font-weight:800;transition:all .14s ease;background:transparent;border:1px solid transparent;
+    }
+    .navlink:hover{transform:translateY(-2px);background:rgba(255,155,46,0.04);color:#fff}
+    .navlink.active{background:linear-gradient(90deg, rgba(255,155,46,0.12), rgba(255,107,0,0.06));color:#fff}
 
-        .links-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-        .link-item{
-            background:rgba(0, 0, 0, 0.938);padding:14px;border-radius:10px;
-            display:flex;flex-direction:column;gap:10px;align-items:flex-start;
-        }
-        .link-item .lbl{font-weight:700;color:#fff}
-        .link-item a{
-            display:inline-block;padding:8px 12px;border-radius:8px;background:linear-gradient(90deg,var(--accent),#ff6b00);
-            color:#111;text-decoration:none;font-weight:700;
-        }
+    .spacer{flex:1}
+    .logout-btn{background:transparent;border:1px solid rgba(231,139,40,0.18);color:var(--accent);padding:10px;border-radius:10px;cursor:pointer;font-weight:800}
 
-        .mobile-toggle{display:none;cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:var(--muted)}
-        @media (max-width:800px){
-            nav.sidebar{position:fixed;left:-320px;top:0;bottom:0;z-index:40;transition:left .22s;box-shadow:8px 0 40px rgba(0,0,0,0.6)}
-            nav.sidebar.open{left:0}
-            .mobile-toggle{display:inline-block}
-            .app{position:relative}
-            main.content{padding:18px}
-        }
-    </style>
+    main.content{flex:1;min-width:0;padding:22px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .title{font-family:"Orbitron",sans-serif;font-weight:800;font-size:1.3rem;color:#fff}
+    .small-muted{color:#cfcfcf;font-size:13px}
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;padding:16px;border:1px solid rgba(255,155,46,0.04);
+      box-shadow:0 8px 28px rgba(2,6,23,0.45);color:var(--muted);margin-bottom:16px;
+    }
+
+    h2.section-title{
+      color:#ffd7ab;margin:22px 0 12px;padding-bottom:8px;border-bottom:1px solid rgba(255,155,46,0.12);
+      font-size:1.05rem;font-weight:800
+    }
+
+    /* Links cards */
+    .links-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+    .link-item{background:rgba(0,0,0,0.55);padding:14px;border-radius:10px;display:flex;flex-direction:column;gap:8px}
+    .link-item .lbl{font-weight:800;color:#fff}
+    .link-item a{display:inline-block;padding:8px 12px;border-radius:8px;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#111;text-decoration:none;font-weight:800}
+
+    /* KPI block improvements */
+    .kpi-card{
+      border-radius:16px;padding:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.3));
+      border:1px solid rgba(255,155,46,0.04);box-shadow:0 8px 30px rgba(2,6,23,0.5);
+    }
+
+    .kpi-wrap{display:flex;flex-direction:column;gap:12px}
+    .kpi-legend{display:flex;gap:12px;align-items:center;flex-wrap:wrap;color:var(--muted);font-weight:700}
+    .legend-item{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02)}
+    .legend-color{width:14px;height:14px;border-radius:4px;box-shadow:0 3px 8px rgba(0,0,0,0.5)}
+
+    /* table container for horizontal scroll */
+    .table-container{overflow:auto;border-radius:12px;padding:10px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.35));}
+
+    .kpi-table{width:100%;border-collapse:collapse;min-width:1000px;font-size:14px}
+    .kpi-table thead th{
+      position:sticky;top:0;background:linear-gradient(180deg, rgba(10,10,12,0.98), rgba(8,8,10,0.98));padding:12px 16px;color:#ffd7ab;font-weight:900
+    }
+    .kpi-table th,.kpi-table td{padding:12px 14px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;white-space:nowrap}
+
+    .kpi-table tbody tr:nth-child(odd) td{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005))}
+    .kpi-table tbody tr:nth-child(even) td{background:transparent}
+
+    .zone-cell{text-align:left;padding-left:18px;font-weight:900;color:#fff;background:rgba(0,0,0,0.6)}
+
+    /* pill badges (big, visible, subtle glow) */
+    .kpi-badge{
+      display:inline-block;min-width:60px;padding:8px 12px;border-radius:999px;font-weight:900;font-size:0.98rem;color:#fff;
+      box-shadow: 0 8px 28px rgba(2,6,23,0.55);
+      transition:transform .12s ease, box-shadow .12s ease;
+    }
+    .kpi-badge:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(2,6,23,0.65)}
+
+    .kpi-pass{background:linear-gradient(180deg,var(--pass), #059669)}
+    .kpi-fail{background:linear-gradient(180deg,#ef4444,var(--fail))}
+    .kpi-empty{background:rgba(255,255,255,0.06);color:#d1d5db;font-weight:800}
+
+    /* tooltip style (title uses native tooltip; but we make it clearer on hover with data-attr) */
+    .kpi-table td { position:relative; }
+    .kpi-tooltip {
+      display:none; position:absolute; left:50%; transform:translateX(-50%); bottom:calc(100% + 8px);
+      background: rgba(10,10,12,0.96); color:#fff; padding:8px 10px; border-radius:8px; font-size:13px; white-space:nowrap;
+      box-shadow:0 8px 24px rgba(0,0,0,0.6); z-index:6;
+    }
+    .kpi-table td:hover .kpi-tooltip{display:block}
+
+    /* responsiveness */
+    @media (max-width:980px){
+      .app{flex-direction:column}
+      nav.sidebar{width:100%}
+      .table-container{padding:6px}
+      .kpi-table{min-width:760px;font-size:13px}
+      .kpi-badge{min-width:48px;padding:6px 10px}
+    }
+  </style>
 </head>
+
 <body>
-    <div class="app">
-        <nav class="sidebar" id="sidebar">
-            <div class="brand">
-                <img src="source/tm.png" alt="logo">
-                <div>
-                    <h1>NETWORK OPERATION</h1>
-                    <div style="font-size:11px;color:#ffd7ab;margin-top:4px">KEDAH & PERLIS</div>
-                </div>
-            </div>
+  <div class="app">
+    <nav class="sidebar" id="sidebar">
+      <div class="brand">
+        <img src="source/tm.png" alt="logo">
+        <div>
+          <h1>NETWORK OPERATION</h1>
+          <div style="font-size:11px;color:#ffd7ab;margin-top:4px">KEDAH & PERLIS</div>
+        </div>
+      </div>
 
-            <div class="navlist">
-                <a class="navlink active" href="KPI.html">REPORT LINKS</a>
-                <a class="navlink" href="https://tm365.sharepoint.com/sites/PERFORMANCENOKEDAHPERLIS/WEEKLY%20RAW%20DATA/Forms/AllItems.aspx">PERFORMANCE</a>
-                <a class="navlink" href="weekly.html">UPLOAD WEEKLY SUMMARY</a>
-                <a class="navlink" href="monthly.html">UPLOAD MONTHLY SUMMARY </a>
-                <a class="navlink" href="">WEEKLY SUMMARY</a>
-                <a class="navlink" href="dashboard.html">MONTHLY SUMMARY</a>
-            </div>
+      <div class="navlist">
+        <a class="navlink active" href="KPI.html">REPORT LINKS</a>
+        <a class="navlink" href="https://tm365.sharepoint.com/sites/PERFORMANCENOKEDAHPERLIS/WEEKLY%20RAW%20DATA/Forms/AllItems.aspx">PERFORMANCE</a>
+        <a class="navlink" href="weekly.html">UPLOAD WEEKLY SUMMARY</a>
+        <a class="navlink" href="monthly.html">UPLOAD MONTHLY SUMMARY </a>
+        <a class="navlink" href="">WEEKLY SUMMARY</a>
+        <a class="navlink" href="kpi-input.html">INPUT WEEKLY SUMMARY</a>
+        <a class="navlink" href="ddz-input.html">INPUT DDZ WEEKLY SUMMARY</a>
+      </div>
 
-            <div class="spacer"></div>
-            <button class="logout-btn" id="logoutBtn">Logout</button>
-        </nav>
+      <div class="spacer"></div>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </nav>
+    
+    <main class="content">
+      <div class="topbar">
+        <div>
+          <button class="mobile-toggle" id="menuToggle">☰</button>
+          <div class="title">Report Quick Links</div>
+        </div>
+        <div style="color:var(--muted)">Welcome on board, staff</div>
+      </div>
 
-        <main class="content">
-            <div class="topbar">
-                <div>
-                    <button class="mobile-toggle" id="menuToggle">☰</button>
-                    <div class="title">Report Quick Links</div>
-                </div>
-                <div style="color:var(--muted)">Welcome on board, staff</div>
-            </div>
+      <div class="card">
+        <strong style="color:#fff">Use these links to access tools and external resources quickly.</strong>
+        <p style="margin:8px 0 0 0" class="small-muted">Click a link to open it in a new tab. You might be required to use TM secured VPN access.</p>
+        <div style="margin-top:10px">
+          <a href="https://istream.tm.com.my/dana/user/#" target="_blank" rel="noopener">VPN ACCESS</a>
+        </div>
+      </div>
 
-            <div class="card">
-                <strong style="color:#fff">Use these links to access tools and external resources quickly.</strong>
-                <p style="margin:8px 0 0 0">
-                    Click a link to open it in a new tab. You might be required to use TM secured VPN access.  
-                    You can access VPN using the link below:
-                </p>
-                <a href="https://istream.tm.com.my/dana/user/#" target="_blank" rel="noopener">VPN ACCESS</a>
-            </div>
+      <h2 class="section-title">🗓 Daily Reports</h2>
+      <div class="links-grid">
+        <div class="link-item">
+          <div class="lbl">SOD/EOD Report</div>
+          <div class="desc small-muted">Track daily CTT raw data.</div>
+          <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/ANOC%20Southern/C-TrackerV3Nationwide?rs:embed=true" target="_blank" rel="noopener">OPEN CTT TRACKER DATA</a>
+        </div>
+        <div class="link-item">
+          <div class="lbl">CR Tracker</div>
+          <div class="desc small-muted">Track CR raw data.</div>
+          <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/ANOC%20Southern/CR-TrackerV1?rs:embed=true" target="_blank" rel="noopener">OPEN CR TRACKER</a>
+        </div>
+        <div class="link-item">
+          <div class="lbl">NPSF/NPSA Report</div>
+          <div class="desc small-muted">Access NPSF/NPSA Raw Data.</div>
+          <a href="https://nocgrid.tm.com.my/dashboard/ntt/main.php" target="_blank" rel="noopener">OPEN NPSF/NPSA DATA</a>
+        </div>
+        <div class="link-item">
+          <div class="lbl">CTT Next Step</div>
+          <div class="desc small-muted">Access CTT NEXT raw weekly data.</div>
+          <a href="https://performdepot.tm.com.my/login?from=%2Fjob%2FNEXT_CTT%2Fws%2F" target="_blank" rel="noopener">OPEN CTT RAW DATA</a>
+        </div>
+        <div class="link-item">
+          <div class="lbl">NTT Data Tracker</div>
+          <div class="desc small-muted">Access daily NTT raw data.</div>
+          <a href="https://nocgrid.tm.com.my/dashboard/ntt/main.php" target="_blank" rel="noopener">OPEN NTT DATA</a>
+        </div>
+      </div>
 
-            <!-- DAILY REPORTS SECTION -->
-            <h2 class="section-title">🗓 Daily Reports</h2>
-            <div class="links-grid">
-                <div class="link-item">
-                    <div class="lbl">SOD/EOD Report</div>
-                    <div class="desc">Track daily CTT raw data.</div>
-                    <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/ANOC%20Southern/C-TrackerV3Nationwide?rs:embed=true" target="_blank" rel="noopener">OPEN CTT TRACKER DATA</a>
-                </div>
-                <div class="link-item">
-                    <div class="lbl">CR Tracker</div>
-                    <div class="desc">Track CR raw data.</div>
-                    <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/ANOC%20Southern/CR-TrackerV1?rs:embed=true" target="_blank" rel="noopener">OPEN CR TRACKER</a>
-                </div>
+      <h2 class="section-title">📅 Weekly Reports</h2>
+      <div class="links-grid">
+        <div class="link-item">
+          <div class="lbl">ISR REPORT</div>
+          <div class="desc small-muted">Access ISR raw weekly data.</div>
+          <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/TM%20Force%20Reporting/Fulfillment/TM%20Force%20Fulfillment_2025_H2" target="_blank" rel="noopener">OPEN ISR RAW DATA</a>
+        </div>
+        <div class="link-item">
+          <div class="lbl">NPSF/NPSA Report</div>
+          <div class="desc small-muted">Access NPSF/NPSA weekly reports.</div>
+          <a href="https://tmvoc.qualtrics.com/login/identity-provider-select?stateID=93bfe34b-8489-469c-bc9a-d567d39dc675" target="_blank" rel="noopener">OPEN NPSA/NPSF DATA</a>
+        </div>
+        <div class="link-item">
+          <div class="lbl">Weekly Summary</div>
+          <div class="desc small-muted">View uploaded weekly Excel summary.</div>
+          <a href="excel.html" target="_blank" rel="noopener">OPEN WEEKLY SUMMARY</a>
+        </div>
+      </div>
 
-                <div class="link-item">
-                    <div class="lbl">NPSF/NPSA Report</div>
-                    <div class="desc">Access NPSF/NPSA Raw Data.</div>
-                    <a href="https://nocgrid.tm.com.my/dashboard/ntt/main.php" target="_blank" rel="noopener">OPEN NPSF/NPSA DATA</a>
-                </div>
+      <h2 class="section-title">📊 KPI Percentages — KEDAH & PERLIS</h2>
+      <div class="kpi-card card">
+        <div class="kpi-wrap">
+          <div class="kpi-legend">
+            <div class="legend-item"><span class="legend-color" style="background:linear-gradient(180deg,#16a34a,#059669)"></span> Pass (meets target)</div>
+            <div class="legend-item"><span class="legend-color" style="background:linear-gradient(180deg,#ef4444,#dc2626)"></span> Fail (below target)</div>
+            <div class="legend-item"><span class="legend-color" style="background:rgba(255,255,255,0.06)"></span> No Data</div>
+          </div>
 
-                <div class="link-item">
-                    <div class="lbl">CTT Next Step</div>
-                    <div class="desc">Access CTT NEXT raw weekly data.</div>
-                    <a href="https://performdepot.tm.com.my/login?from=%2Fjob%2FNEXT_CTT%2Fws%2F" target="_blank" rel="noopener">OPEN CTT RAW DATA</a>
-                </div>
-                
-                <div class="link-item">
-                    <div class="lbl">NTT Data Tracker</div>
-                    <div class="desc">Access daily NTT raw data.</div>
-                    <a href="https://nocgrid.tm.com.my/dashboard/ntt/main.php" target="_blank" rel="noopener">OPEN NTT DATA</a>
-                </div>
-                
-            </div>
+          <div class="table-container">
+            <div id="kpiContent" class="kpi-empty">Loading KPI data...</div>
+          </div>
+        </div>
+      </div>
 
-            <!-- WEEKLY REPORTS SECTION -->
-            <h2 class="section-title">📅 Weekly Reports</h2>
-            <div class="links-grid">
-                <div class="link-item">
-                    <div class="lbl">ISR REPORT</div>
-                    <div class="desc">Access ISR raw weekly data.</div>
-                    <a href="https://pbivisualize01.tm.com.my/Reports/powerbi/TM%20Force%20Reporting/Fulfillment/TM%20Force%20Fulfillment_2025_H2" target="_blank" rel="noopener">OPEN ISR RAW DATA</a>
-                </div>
-                <div class="link-item">
-                    <div class="lbl">NPSF/NPSA Report</div>
-                    <div class="desc">Access NPSF/NPSA weekly reports.</div>
-                    <a href="https://tmvoc.qualtrics.com/login/identity-provider-select?stateID=93bfe34b-8489-469c-bc9a-d567d39dc675" target="_blank" rel="noopener">OPEN NPSA/NPSF DATA</a>
-                </div>
-                <div class="link-item">
-                    <div class="lbl">Weekly Summary</div>
-                    <div class="desc">View uploaded weekly Excel summary.</div>
-                    <a href="excel.html" target="_blank" rel="noopener">OPEN WEEKLY SUMMARY</a>
-                </div>
-            </div>
-        </main>
-    </div>
+    </main>
+  </div>
 
-<script>
+  <script>
     // toggle mobile sidebar
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
@@ -211,9 +272,187 @@
 
     // logout
     document.getElementById('logoutBtn').addEventListener('click', async () => {
-        try { localStorage.clear(); sessionStorage.clear(); } catch(e){}
-        window.location.href = 'index.html';
+      try { localStorage.clear(); sessionStorage.clear(); } catch(e){}
+      window.location.href = 'index.html';
     });
-</script>
+
+    // KPI renderer (improved with tooltip details)
+    (function renderKPI(){
+      const STORAGE_KEY = 'kpi_kedah_perlis_v1';
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const target = document.getElementById('kpiContent');
+
+      const THRESHOLDS = {
+        MCATi: 98.0,
+        MCATi_NO_SHOW: 0.6,
+        NPSA: 72.0,
+        NPSF: 91.0,
+        MCATr: 90.0,
+        MCATr_NO_SHOW: 0.4,
+        CTIR: 75.0
+      };
+
+      const keys = ['MCATi','MCATi_NO_SHOW','NPSA','NPSF','MCATr','MCATr_NO_SHOW','CTIR'];
+      const headerLabels = ['Zone','MCATi','MCATi NO SHOW','NPSA','NPSF','MCATr','MCATr NO SHOW','CTIR'];
+      const zonesOrder = ['ALOR SETAR','JITRA','KULIM','LANGKAWI','PERLIS','SG PETANI'];
+
+      function formatPercent(value){
+        if (value === null || value === undefined || value === '') return '-';
+        const num = Number(value);
+        if (!Number.isFinite(num)) return String(value);
+        let s = num.toFixed(2).replace(/\.00$/,'').replace(/(\.\d)0$/,'$1');
+        return s + '%';
+      }
+
+      function classify(key, value){
+        if (value === null || value === undefined || value === '') return {cls:'kpi-empty', status:'nodata'};
+        const num = Number(value);
+        if (!Number.isFinite(num)) return {cls:'kpi-empty', status:'nodata'};
+        const t = THRESHOLDS[key];
+        if (t === undefined) return {cls:'kpi-empty', status:'nodata'};
+        if (num >= t) return {cls:'kpi-pass', status:'pass', threshold:t, diff: +(num - t)};
+        return {cls:'kpi-fail', status:'fail', threshold:t, diff: +(num - t)};
+      }
+
+      if(!raw){
+        target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">No KPI values saved yet. Open <strong>kpi-input.html</strong> to add percentages for zones.</div>';
+        return;
+      }
+
+      try {
+        const data = JSON.parse(raw);
+        if(!data.zones){
+          target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">Saved KPI data has wrong format. Please re-import from input page.</div>';
+          return;
+        }
+
+        let html = '<div style="font-weight:800;color:#ffd7ab;margin-bottom:8px">State: ' + (data.state || 'KEDAH&PERLIS') + '</div>';
+        html += '<table class="kpi-table"><thead><tr>';
+        headerLabels.forEach(h => { html += '<th>' + h + '</th>'; });
+        html += '</tr></thead><tbody>';
+
+        zonesOrder.forEach(zone => {
+          const row = data.zones[zone] || {};
+          html += '<tr>';
+          html += '<td class="zone-cell">' + zone + '</td>';
+          keys.forEach(k => {
+            const v = row[k];
+            const disp = formatPercent(v);
+            const info = classify(k, v);
+            // build tooltip text
+            let tooltip = '';
+            if(info.status === 'nodata') tooltip = 'No data';
+            else {
+              const sign = info.diff >= 0 ? 'above' : 'below';
+              tooltip = `${disp} — ${Math.abs(info.diff).toFixed(2)}% ${sign} threshold (${info.threshold}%)`;
+            }
+
+            if(info.status === 'nodata'){
+              html += `<td class="${info.cls}"><span class="kpi-badge kpi-empty">${disp}</span></td>`;
+            } else {
+              html += `<td class="${info.cls}"><span class="kpi-badge ${info.cls}" aria-label="${tooltip}">${disp}</span>`;
+              html += `<div class="kpi-tooltip">${tooltip}</div></td>`;
+            }
+          });
+          html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        target.innerHTML = html;
+      } catch(e){
+        console.error(e);
+        target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">Error reading KPI data. Please re-save from the input page.</div>';
+      }
+    })();
+    /* ---- DDZ renderer — paste into KPI.html AFTER your existing renderer ---- */
+(function renderDDZ(){
+  const STORAGE_KEY = 'ddz_kedah_perlis_v1';
+  const raw = localStorage.getItem(STORAGE_KEY);
+  // find a place to insert the DDZ card: we'll append after the KPI card container
+  const content = document.querySelector('main.content');
+  if(!content) return;
+
+  // build wrapper (inject once)
+  let ddzContainer = document.getElementById('ddzContainer');
+  if(!ddzContainer){
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `
+      <h2 class="section-title">📌 DDZ KPIs — KEDAH & PERLIS</h2>
+      <div class="kpi-card card" id="ddzContainer">
+        <div class="kpi-wrap">
+          <div class="kpi-legend">
+            <div class="legend-item"><span class="legend-color" style="background:linear-gradient(180deg,#3b82f6,#2563eb)"></span> DDZ Value</div>
+            <div class="legend-item"><span class="legend-color" style="background:rgba(255,255,255,0.06)"></span> No Data</div>
+          </div>
+          <div class="table-container"><div id="ddzContent" class="kpi-empty">Loading DDZ data...</div></div>
+        </div>
+      </div>`;
+    // Insert DDZ section at the end of main content (or just after the KPI card if you prefer)
+    // Place after the KPI card block
+    const kpiCard = document.querySelector('.kpi-card');
+    if(kpiCard && kpiCard.parentNode){
+      kpiCard.parentNode.insertBefore(wrapper, kpiCard.nextSibling);
+    } else {
+      content.appendChild(wrapper);
+    }
+    ddzContainer = document.getElementById('ddzContainer');
+  }
+
+  const target = document.getElementById('ddzContent');
+
+  // zones and keys
+  const zonesOrder = ['ALOR SETAR','JITRA','KULIM','LANGKAWI','PERLIS','SG PETANI '];
+  const KEYS = ['ISR','MCAT'];
+
+  function fmt(v){
+    if(v === null || v === undefined || v === '') return '-';
+    const n = Number(v);
+    if(!Number.isFinite(n)) return String(v);
+    return (Math.round(n * 100) / 100).toString().replace(/\.00$/,'').replace(/(\.\d)0$/,'$1') + '%';
+  }
+
+  try {
+    if(!raw){
+      target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">No DDZ values saved yet. Open <strong>ddz-input.html</strong> to add values.</div>';
+      return;
+    }
+    const data = JSON.parse(raw);
+    if(!data.zones){
+      target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">Saved DDZ data has wrong format. Please re-import from input page.</div>';
+      return;
+    }
+
+    // build table
+    let html = '<table class="kpi-table"><thead><tr>';
+    html += '<th>Zone</th>';
+    KEYS.forEach(k => html += `<th>${k}</th>`);
+    html += '</tr></thead><tbody>';
+
+    zonesOrder.forEach(zone => {
+      const row = data.zones[zone] || {};
+      html += '<tr>';
+      html += `<td class="zone-cell">${zone}</td>`;
+      KEYS.forEach(k=>{
+        const v = row[k];
+        const display = fmt(v);
+        if(display === '-') {
+          html += `<td class="kpi-empty"><span class="kpi-badge kpi-empty">-</span></td>`;
+        } else {
+          // neutral blue badge for DDZ values (no thresholds provided)
+          html += `<td class="kpi-pass"><span class="kpi-badge" style="background:linear-gradient(180deg,#3b82f6,#2563eb)">${display}</span></td>`;
+        }
+      });
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    target.innerHTML = html;
+  } catch(e){
+    console.error(e);
+    target.innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">Error reading DDZ data. Please re-save from the input page.</div>';
+  }
+})();
+
+  </script>
 </body>
 </html>
