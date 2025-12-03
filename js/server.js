@@ -4,6 +4,7 @@ const mysql = require("mysql2");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const path = require("path");
+const fs = require("fs");
 
 console.log("🚀 Starting server...");
 
@@ -31,11 +32,11 @@ db.connect((err) => {
 const dbPromise = db.promise();
 
 // --- Serve Frontend Files ---
-// adjust if your static files are in another folder (e.g., './public')
-app.use('/js', express.static(path.join(__dirname)));
+// Serve files from project root and a dedicated js folder if exists
+app.use('/js', express.static(path.join(__dirname, 'js')));
 app.use('/', express.static(path.join(__dirname, '..')));
 
-// --- Login / Register (unchanged) ---
+// --- Login / Register ---
 app.post("/verify-password", (req, res) => {
   const { staffid, password } = req.body;
   if (!staffid || !password) return res.status(400).json({ error: "Missing staffid or password" });
@@ -76,10 +77,16 @@ app.post("/register", (req, res) => {
 
 // --- Excel Upload Routes (if implemented) ---
 try {
-  const excelHandler = require("./excelHandler");
-  excelHandler(app, db);
-} catch(e){
-  console.log("No excelHandler found or error requiring it:", e.message || e);
+  const excelHandlerPath = path.join(__dirname, "excelHandler.js");
+  if (fs.existsSync(excelHandlerPath)) {
+    const excelHandler = require(excelHandlerPath);
+    if (typeof excelHandler === "function") excelHandler(app, db);
+    else console.log("excelHandler found but does not export a function.");
+  } else {
+    console.log("No excelHandler found.");
+  }
+} catch (e) {
+  console.log("Error requiring excelHandler:", e.message || e);
 }
 
 // ----------------------------
@@ -153,7 +160,7 @@ app.get('/api/kpi/:dataset', async (req, res) => {
 });
 
 // ----------------------------
-// DDZ API: save and load ddz datasets (ddz_values table - separate table)
+// DDZ API: save and load ddz datasets
 // ----------------------------
 
 // POST /api/ddz/save
@@ -217,6 +224,64 @@ app.get('/api/ddz/:dataset', async (req, res) => {
     return res.json({ success: true, dataset, data: result });
   } catch (err) {
     console.error('Error loading DDZ dataset', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+// ----------------------------
+// Weekly KPI API: save & load
+// ----------------------------
+app.post('/api/weekly/save', async (req, res) => {
+  try {
+    const body = req.body;
+    if (!body || !body.dataset || !body.state || !body.zones) {
+      return res.status(400).json({ success: false, error: 'Missing dataset/state/zones' });
+    }
+
+    const { dataset, state, zones } = body;
+    const rows = [];
+    for (const zoneName of Object.keys(zones)) {
+      const zoneObj = zones[zoneName] || {};
+      for (const metric of Object.keys(zoneObj)) {
+        const rawVal = zoneObj[metric];
+        const val = rawVal === null || rawVal === undefined || rawVal === '' ? null : Number(rawVal);
+        rows.push([dataset, state, zoneName, metric, val]);
+      }
+    }
+
+    if (rows.length === 0) return res.status(400).json({ success:false, error: 'No rows to save' });
+
+    const placeholders = rows.map(() => '(?, ?, ?, ?, ?)').join(', ');
+    const flat = rows.flat();
+
+    const sql = `
+      INSERT INTO weekly_values (dataset, state_name, zone_name, metric, metric_value)
+      VALUES ${placeholders}
+      ON DUPLICATE KEY UPDATE metric_value = VALUES(metric_value), updated_at = CURRENT_TIMESTAMP
+    `;
+    await dbPromise.query(sql, flat);
+    return res.json({ success: true, inserted: rows.length });
+  } catch (err) {
+    console.error('Error saving weekly dataset', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+app.get('/api/weekly/:dataset', async (req, res) => {
+  try {
+    const dataset = req.params.dataset;
+    if (!dataset) return res.status(400).json({ success:false, error: 'Missing dataset param' });
+    const sql = `SELECT state_name, zone_name, metric, metric_value FROM weekly_values WHERE dataset = ?`;
+    const [rows] = await dbPromise.query(sql, [dataset]);
+    const result = { state: null, zones: {} };
+    rows.forEach(r => {
+      result.state = r.state_name;
+      if (!result.zones[r.zone_name]) result.zones[r.zone_name] = {};
+      result.zones[r.zone_name][r.metric] = r.metric_value === null ? null : Number(r.metric_value);
+    });
+    return res.json({ success: true, dataset, data: result });
+  } catch (err) {
+    console.error('Error loading weekly dataset', err);
     return res.status(500).json({ success: false, error: 'Server error' });
   }
 });

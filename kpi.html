@@ -92,7 +92,7 @@
 
     /* Links cards */
     .links-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-    .link-item{background:rgba(0,0,0,0.55);padding:14px;border-radius:10px;display:flex;flex-direction:column;gap:8px}
+    .link-item{background:rgba(0,0,0,0.55);Padding:14px;border-radius:10px;display:flex;flex-direction:column;gap:8px}
     .link-item .lbl{font-weight:800;color:#fff}
     .link-item a{display:inline-block;padding:8px 12px;border-radius:8px;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#111;text-decoration:none;font-weight:800}
 
@@ -169,8 +169,9 @@
         <a class="navlink" href="https://tm365.sharepoint.com/sites/PERFORMANCENOKEDAHPERLIS/WEEKLY%20RAW%20DATA/Forms/AllItems.aspx">PERFORMANCE</a>
         <a class="navlink" href="weekly.html">UPLOAD WEEKLY SUMMARY</a>
         <a class="navlink" href="monthly.html">UPLOAD MONTHLY SUMMARY </a>
-        <a class="navlink" href="ddz-input.html">INPUT DDZ WEEKLY SUMMARY</a>
-        <a class="navlink" href="kpi-input.html">INPUT NFF WEEKLY SUMMARY</a>
+         <a class="navlink" href="weekly-input.html">INPUT CFF WEEKLY SUMMARY</a>
+        <a class="navlink" href="kpi-input.html">INPUT CFF MONTHLY SUMMARY</a>
+        <a class="navlink" href="ddz-input.html">INPUT DDZ MONTHLY SUMMARY</a>
       </div>
 
       <div class="spacer"></div>
@@ -242,6 +243,18 @@
         </div>
       </div>
 
+    <h2 class="section-title">📈 Weekly KPIs — KEDAH & PERLIS</h2>
+    <div class="kpi-card card" id="weeklyCard">
+      <div class="kpi-wrap">
+        <div class="kpi-legend">
+          <div class="legend-item"><span class="legend-color" style="background:linear-gradient(180deg,#16a34a,#059669)"></span> Pass</div>
+          <div class="legend-item"><span class="legend-color" style="background:linear-gradient(180deg,#ef4444,#dc2626)"></span> Fail</div>
+          <div class="legend-item"><span class="legend-color" style="background:rgba(255,255,255,0.06)"></span> No Data</div>
+        </div>
+        <div class="table-container"><div id="weeklyContent" class="kpi-empty">Loading weekly KPI data...</div></div>
+      </div>
+    </div>
+  
       <!-- KPI card (main dataset) -->
       <h2 class="section-title">📊 KPI Percentages — KEDAH & PERLIS</h2>
       <div class="kpi-card card">
@@ -276,6 +289,7 @@
       window.location.href = 'index.html';
     });
 
+    
     /**************************
      * Helpers for formatting
      **************************/
@@ -290,22 +304,61 @@
     const THRESHOLDS = {
       MCATi: 98.0,
       MCATi_NO_SHOW: 0.6,
+      SRF_30DAYS: 95.0,
+      ISR:75.0,
+      FFRU90:85.0,
+      SRU24:80.0,
       NPSA: 72.0,
       NPSF: 91.0,
       MCATr: 90.0,
       MCATr_NO_SHOW: 0.4,
+      CANCEL_CTT: 10.0,
       CTIR: 75.0
     };
 
-    function classify(key, value){
+    function classify(normalizedKey, value){
+      // normalizedKey should be upper/underscore form used by THRESHOLDS
       if (value === null || value === undefined || value === '') return {cls:'kpi-empty', status:'nodata'};
       const num = Number(value);
       if (!Number.isFinite(num)) return {cls:'kpi-empty', status:'nodata'};
-      const t = THRESHOLDS[key];
+      const t = THRESHOLDS[normalizedKey];
       if (t === undefined) return {cls:'kpi-empty', status:'nodata'};
       if (num >= t) return {cls:'kpi-pass', status:'pass', threshold:t, diff: +(num - t)};
       return {cls:'kpi-fail', status:'fail', threshold:t, diff: +(num - t)};
     }
+
+    function normalizeKey(k){
+      // convert labels like "SRF 30DAYS" or "SDZ PRODUCTIVITY" to keys used in THRESHOLDS (underscore, uppercase)
+      return String(k).trim().replace(/\s+/g,'_').replace(/[^A-Za-z0-9_]/g,'_');
+    }
+
+    /**************************
+     * week helper (ISO week -> wrap to 1..52)
+     **************************/
+    function getISOWeekNumber(date){
+  // returns ISO week number (1..53)
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  // Thursday in current week decides the year.
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return weekNo;
+}
+
+function getDisplayWeek(date){
+  // get ISO week for the given date, then return the PREVIOUS week (wrapped 1..52)
+  const iso = getISOWeekNumber(date);
+
+  // previous week = iso - 1 ; if <= 0 wrap to 52
+  let prev = iso - 1;
+  if (prev <= 0) prev = 52;
+
+  // guard against iso==53 producing prev=52 (ok). Ensure prev is in 1..52.
+  prev = ((prev - 1) % 52) + 1;
+
+  return 'W' + prev;
+}
+
 
     /**************************
      * Fetch dataset from server
@@ -325,16 +378,110 @@
       }
     }
 
-    /**************************
+    (async function renderWeekly(){
+      // load weekly dataset (server first, fallback to local)
+      async function loadWeekly(dataset){
+        try {
+          const resp = await fetch(`/api/weekly/${encodeURIComponent(dataset)}`);
+          if (!resp.ok) return null;
+          const json = await resp.json();
+          return json && json.data ? json.data : null;
+        } catch(e){ console.error('loadWeekly', e); return null; }
+      }
+
+      const data = await loadWeekly('weekly_kedah_perlis_v1') || JSON.parse(localStorage.getItem('weekly_kedah_perlis_v1') || 'null') || { state:'KEDAH&PERLIS', zones:{} };
+
+      // Use the KPI keys that match your input page (spaces preserved)
+      const keys = ['MCATi','MCATi_NO_SHOW','ISR','SRF 30DAYS','MCATr_NO_SHOW','MCATr','FFRU90',
+        'SFRU','SRU24','NPSA','NPSF','SDZ PRODUCTIVITY','CANCEL CTT'];
+
+      const zonesOrder = ['ALOR SETAR','JITRA','KULIM','LANGKAWI','PERLIS','SG PETANI'];
+
+      try {
+        const weekLabel = getDisplayWeek(new Date());
+        let html = '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">';
+        html += '<div style="font-weight:800;color:#ffd7ab">State: ' + (data.state || 'KEDAH&PERLIS') + '</div>';
+        html += `<div style="font-weight:800;color:#fff;background:rgba(255,255,255,0.04);padding:6px 10px;border-radius:8px">` + weekLabel + '</div>';
+        html += '</div>';
+
+        html += '<table class="kpi-table"><thead><tr><th>Zone</th>';
+        keys.forEach(k => html += `<th>${k.replace(/_/g,' ')}</th>`);
+        html += '</tr></thead><tbody>';
+
+        // STATE ROW: show stateTotals (if present) under the same KPI keys
+        const stateTotals = data.stateTotals || {};
+        html += '<tr>';
+        html += `<td class="zone-cell">${data.state || 'STATE'} (State)</td>`;
+        keys.forEach(k => {
+          const v = stateTotals[k]; // stateTotals stored with same keys as KPI labels
+          const disp = formatPercent(v);
+          const info = classify(normalizeKey(k), v);
+          let tooltip = '';
+          if(info.status === 'nodata') {
+            tooltip = 'No data';
+          } else {
+            const sign = info.diff >= 0 ? 'above' : 'below';
+            tooltip = `${disp} — ${Math.abs(info.diff).toFixed(2)}% ${sign} threshold (${info.threshold}%)`;
+          }
+
+          if(info.status === 'nodata'){
+            html += `<td class="${info.cls}"><span class="kpi-badge kpi-empty">${disp}</span></td>`;
+          } else {
+            html += `<td class="${info.cls}"><span class="kpi-badge ${info.cls}" aria-label="${tooltip}">${disp}</span>`;
+            html += `<div class="kpi-tooltip">${tooltip}</div></td>`;
+          }
+        });
+        html += '</tr>';
+
+        // ZONE ROWS
+        zonesOrder.forEach(zone => {
+          const row = data.zones[zone] || {};
+          html += '<tr>';
+          html += `<td class="zone-cell">${zone}</td>`;
+          keys.forEach(k => {
+            const v = row[k];
+            const disp = formatPercent(v);                // use shared formatting
+            const info = classify(normalizeKey(k), v);   // normalized key for thresholds
+            let tooltip = '';
+            if(info.status === 'nodata') {
+              tooltip = 'No data';
+            } else {
+              const sign = info.diff >= 0 ? 'above' : 'below';
+              tooltip = `${disp} — ${Math.abs(info.diff).toFixed(2)}% ${sign} threshold (${info.threshold}%)`;
+            }
+
+            if(info.status === 'nodata'){
+              html += `<td class="${info.cls}"><span class="kpi-badge kpi-empty">${disp}</span></td>`;
+            } else {
+              // apply pass/fail classes (kpi-pass / kpi-fail) and show tooltip
+              html += `<td class="${info.cls}"><span class="kpi-badge ${info.cls}" aria-label="${tooltip}">${disp}</span>`;
+              html += `<div class="kpi-tooltip">${tooltip}</div></td>`;
+            }
+          });
+          html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        document.getElementById('weeklyContent').innerHTML = html;
+      } catch(e){
+        console.error(e);
+        document.getElementById('weeklyContent').innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">Error reading weekly KPI data.</div>';
+      }
+    })();
+
+  /**************************
      * Render main KPI
      **************************/
+
     (async function renderKPI(){
       const target = document.getElementById('kpiContent');
       const data = await loadDataset('kpi_kedah_perlis_v1') || JSON.parse(localStorage.getItem('kpi_kedah_perlis_v1') || 'null') || { state:'KEDAH&PERLIS', zones: {} };
 
       // build table
-      const keys = ['MCATi','MCATi_NO_SHOW','NPSA','NPSF','MCATr','MCATr_NO_SHOW','CTIR'];
-      const headerLabels = ['Zone','MCATi','MCATi NO SHOW','NPSA','NPSF','MCATr','MCATr NO SHOW','CTIR'];
+      const keys = ['MCATi','MCATi_NO_SHOW','ISR','SRF 30DAYS','MCATr_NO_SHOW','MCATr','FFRU90',
+  'SFRU','SRU24','NPSA','NPSF','SDZ PRODUCTIVITY','CANCEL CTT'];
+      const headerLabels = ['ZONE','MCATi','MCATi_NO_SHOW','ISR','SRF 30DAYS','MCATr_NO_SHOW','MCATr','FFRU90',
+  'SFRU','SRU24','NPSA','NPSF','SDZ PRODUCTIVITY','CANCEL CTT'];
       const zonesOrder = ['ALOR SETAR','JITRA','KULIM','LANGKAWI','PERLIS','SG PETANI'];
 
       let html = '<div style="font-weight:800;color:#ffd7ab;margin-bottom:8px">State: ' + (data.state || 'KEDAH&PERLIS') + '</div>';
@@ -349,7 +496,7 @@
         keys.forEach(k => {
           const v = row[k];
           const disp = formatPercent(v);
-          const info = classify(k, v);
+          const info = classify(normalizeKey(k), v);
           let tooltip = '';
           if(info.status === 'nodata') tooltip = 'No data';
           else {
@@ -438,6 +585,8 @@
       console.error(e);
       document.getElementById('ddzContent').innerHTML = '<div class="kpi-empty" style="color:#ffd7ab">Error reading DDZ data.</div>';
     }
+
+
   })();
   </script>
 </body>
